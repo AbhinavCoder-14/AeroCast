@@ -1,0 +1,54 @@
+# Dockerfile for the Next.js application
+#
+# This is the "recipe" that tells Docker how to build a self-contained
+# "box" (a container) for our web application.
+
+# --- Stage 1: The "Baking Kitchen" (Build Stage) ---
+# We start with a version of Node.js to build the app.
+FROM node:18-alpine AS builder
+
+# Set the main workspace inside the container to /app.
+WORKDIR /app
+
+# Copy the list of ingredients (package.json) and the prisma schema first.
+# This is a caching trick to speed up future builds.
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install all the ingredients (dependencies).
+RUN npm install
+
+# --- THIS IS THE FIX ---
+# Generate the Prisma Client tailored for the container's Linux OS.
+# This must happen *before* the build command.
+RUN npx prisma generate
+
+# Now, copy the rest of our secret recipe (the app code).
+COPY . .
+
+# Finally, "bake the cake" by running the build command.
+# This creates the final, optimized version of the app in a .next folder.
+RUN npm run build
+
+# --- Stage 2: The "Serving Box" (Production Stage) ---
+# We start with a fresh, clean box. This makes our final container very small.
+FROM node:18-alpine
+
+# Set the workspace inside the clean box.
+WORKDIR /app
+
+# Tell the app to run in the efficient "production" mode.
+ENV NODE_ENV=production
+
+# Copy ONLY the finished cake (the built app) from the "Baking Kitchen".
+# We leave all the messy bowls and build tools behind.
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# Tell the outside world that the app inside this box uses port 3000.
+EXPOSE 3000
+
+# The simple, final instruction to run the app.
+CMD ["npm", "start"]

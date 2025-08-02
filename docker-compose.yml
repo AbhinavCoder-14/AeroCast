@@ -1,0 +1,49 @@
+  # docker-compose.yml
+
+  version: '3.8'
+
+  services:
+
+    # 1. The Next.js Web Application Service (We are disabling this)
+    webapp:
+      build:
+        context: ./next-app
+        dockerfile: Dockerfile
+      ports:
+        - "3000:3000"
+      volumes:
+        - ./next-app:/app
+        - /app/node_modules
+      command: sh -c "npx prisma migrate dev && npm run dev"
+      environment:
+        - CHOKIDAR_USEPOLLING=true
+        - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
+      depends_on:
+        - postgres
+
+    # 2. The Python Worker Service (This stays the same)
+    worker:
+      build:
+        context: ./python-worker
+        dockerfile: Dockerfile
+      volumes:
+        - ./python-worker:/app
+      environment:
+        - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
+      depends_on:
+        - postgres
+
+    # 3. The PostgreSQL Database Service (This stays the same)
+    postgres:
+      image: postgres:latest
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres-data:/var/lib/postgresql/data
+      environment:
+        - POSTGRES_USER=weather
+        - POSTGRES_PASSWORD=weatherdb
+        - POSTGRES_DB=weatherdb
+
+  volumes:
+    postgres-data:

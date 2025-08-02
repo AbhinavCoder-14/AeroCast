@@ -1,0 +1,8 @@
+# Ignore dependencies and build artifacts
+node_modules
+.next
+
+# Ignore Docker and VSCode specific files
+.dockerignore
+Dockerfile
+.vscode
