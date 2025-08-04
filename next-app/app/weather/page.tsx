@@ -1,6 +1,7 @@
 
 "use client";
 
+
 import SearchBar from "@/components/SearchBar";
 import { checkServerIdentity } from "tls";
 
