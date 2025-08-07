@@ -22,3 +22,4 @@ COPY . .
 # The simple, final instruction to run when the container starts.
 # This will execute our main worker script.
 CMD ["python", "worker.py"]
+

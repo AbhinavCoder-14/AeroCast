@@ -1,55 +1,47 @@
 # Dockerfile for the Next.js application
 
-FROM node:18-alpine AS base
+# --- Stage 1: Build Stage ---
+# We start with a version of Node.js to build the app.
+FROM node:18-alpine AS builder
 
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Set the main workspace inside the container to /app.
 WORKDIR /app
 
-# Copy package files
+# Copy the package.json and prisma schema first for better caching.
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies (including dev dependencies for build)
-RUN npm ci && npm cache clean --force
+# Install all dependencies.
+RUN npm install
 
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-# Generate Prisma Client
+# --- THIS IS THE CRITICAL FIX ---
+# We explicitly run 'prisma generate'. This creates the Prisma Client
+# that is compatible with the container's Linux environment.
 RUN npx prisma generate
 
-# Build the application
+# Copy the rest of your application code.
+COPY . .
+
+# Build the app for production. This step now works because
+# the Prisma Client has been generated.
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
+# --- Stage 2: Production Stage ---
+# We start with a fresh, clean box for the final app.
+FROM node:18-alpine
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy built application
+# Copy the built app, node_modules, and package.json from the builder stage.
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Copy Prisma files
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-
-USER nextjs
+# Also copy the generated Prisma client and schema to the production image.
+COPY --from=builder /app/prisma ./prisma/
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-CMD ["node", "server.js"]
+CMD ["npm", "start"]

@@ -14,14 +14,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id String @id @default(uuid())
-  firstName String @map("first_name")
-  lastName String @map("last_name")
-  email String @unique
-  profileImgURL String? @map("profile_image_url")
-  password String
-  salt String
-  @@map("users")
+model Jobs {
+  jobId  String @id @default(uuid())
+  city   String @map("city")
+  status String @default("PENDING") @map("status")
+
+  @@map("jobs")
 }
-  

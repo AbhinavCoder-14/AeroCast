@@ -19,7 +19,7 @@ export default function WeatherPage() {
     setCurrentWeather(null);
 
     try {
-      const response = await fetch("api/jobs", {
+      const response = await fetch("/api/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,3 +44,6 @@ export default function WeatherPage() {
 
   return <SearchBar onSearch={handleSearch} />;
 }
+
+
+
