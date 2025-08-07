@@ -1,15 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
 interface SearchBarProps {
   onSearch: (city: string) => void;
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
-  const [city, setCity] = useState<string>();
-  const handleSubmit = (e: any) => {
+  // Initialize with empty string instead of undefined
+  const [city, setCity] = useState<string>("");
+  
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (city?.trim()) {
+    if (city.trim()) {
       onSearch(city.trim());
     }
   };
@@ -21,7 +24,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     >
       <input
         type="text"
-        value={city}
+        value={city} // Now always controlled with a string value
         onChange={(e) => setCity(e.target.value)}
         placeholder="Enter city name..."
         className="flex-grow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-2 border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition"

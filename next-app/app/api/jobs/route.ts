@@ -8,7 +8,7 @@ interface geoResponse {
 }
 
 interface geoCorrdinates {
-  results?: geoResponse[]; // Note: it's 'results' not 'result'
+  results?: geoResponse[];
 }
 
 interface currentWeather {
@@ -20,6 +20,8 @@ interface currentWeather {
 
 export async function getCurrentWeather(city: string) {
   try {
+    console.log(`[Weather API] Fetching coordinates for city: ${city}`);
+    
     const geoRes = await axios.get<geoCorrdinates>(
       `https://geocoding-api.open-meteo.com/v1/search`,
       {
@@ -29,14 +31,18 @@ export async function getCurrentWeather(city: string) {
           language: "en",
           format: "json",
         },
+        timeout: 10000, // 10 second timeout
       }
     );
 
     const geoData = geoRes.data;
     if (!geoData.results || geoData.results.length === 0) {
+      console.log(`[Weather API] No coordinates found for city: ${city}`);
       return null;
     }
+    
     const { latitude, longitude } = geoData.results[0];
+    console.log(`[Weather API] Found coordinates: ${latitude}, ${longitude}`);
 
     const weatherRes = await axios.get<currentWeather>(
       "https://api.open-meteo.com/v1/forecast",
@@ -46,62 +52,119 @@ export async function getCurrentWeather(city: string) {
           longitude,
           current: "temperature_2m,weather_code",
         },
+        timeout: 10000, // 10 second timeout
       }
     );
 
+    console.log(`[Weather API] Weather data received for ${city}`);
     return weatherRes.data.current ?? null;
   } catch (err) {
     console.error(`[Weather API] Error fetching weather for ${city}:`, err);
+    if (axios.isAxiosError(err)) {
+      console.error(`[Weather API] Axios error details:`, {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+    }
     return null;
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { city } = body;
-
-    if (!city) {
+    console.log("[API] POST request received");
+    
+    // Parse request body
+    let body;
+    try {
+      body = await request.json();
+      console.log("[API] Request body parsed:", body);
+    } catch (parseError) {
+      console.error("[API] Failed to parse request body:", parseError);
       return NextResponse.json(
-        {
-          error: "City is required",
-        },
+        { error: "Invalid JSON in request body" },
         { status: 400 }
       );
     }
 
-    console.log("Requested data for the city:", city);
+    const { city } = body;
 
-    const [newJob, currentWeatherData] = await Promise.all([
-      prisma.jobs.create({
-        data: { city: city },
-      }),
-      getCurrentWeather(city),
-    ]);
+    if (!city || typeof city !== 'string') {
+      console.log("[API] Missing or invalid city parameter");
+      return NextResponse.json(
+        { error: "City is required and must be a string" },
+        { status: 400 }
+      );
+    }
 
-    console.log(`New job token has been created: ${newJob.jobId}`);
+    console.log("[API] Processing request for city:", city);
+
+    // Test database connection first
+    let newJob;
+    try {
+      console.log("[API] Attempting to create job in database...");
+      newJob = await prisma.jobs.create({
+        data: { city: city.trim() },
+      });
+      console.log(`[API] Job created successfully with ID: ${newJob.jobId}`);
+    } catch (dbError) {
+      console.error("[API] Database error:", dbError);
+      return NextResponse.json(
+        { 
+          error: "Database connection failed. Please check if the database is running.",
+          details: process.env.NODE_ENV === 'development' ? String(dbError) : undefined
+        },
+        { status: 500 }
+      );
+    }
+
+    // Fetch weather data
+    let currentWeatherData;
+    try {
+      console.log("[API] Fetching weather data...");
+      currentWeatherData = await getCurrentWeather(city.trim());
+    } catch (weatherError) {
+      console.error("[API] Weather API error:", weatherError);
+      // Even if weather fails, we can still return the job
+      return NextResponse.json(
+        {
+          jobId: newJob.jobId,
+          error: "Weather data temporarily unavailable",
+          currentWeather: null
+        },
+        { status: 201 }
+      );
+    }
 
     // Check if weather data was found
     if (!currentWeatherData) {
+      console.log(`[API] No weather data found for city: ${city}`);
       return NextResponse.json(
         {
+          jobId: newJob.jobId,
           error: `Weather data not found for city: ${city}`,
+          currentWeather: null
         },
         { status: 404 }
       );
     }
 
+    console.log("[API] Request completed successfully");
     return NextResponse.json(
       {
         jobId: newJob.jobId,
-        currentWeather: currentWeatherData, // Use consistent naming
+        currentWeather: currentWeatherData,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("[API] Error creating analysis job:", error);
+    console.error("[API] Unexpected error:", error);
     return NextResponse.json(
-      { error: "Failed to create the job" },
+      { 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
       { status: 500 }
     );
   }
