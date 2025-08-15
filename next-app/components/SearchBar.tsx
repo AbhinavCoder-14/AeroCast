@@ -5,6 +5,7 @@ interface SearchBarProps {
   onSearch: (city: string) => void;
 }
 
+
 export default function SearchBar({ onSearch }: SearchBarProps) {
   // Initialize with empty string instead of undefined
   const [city, setCity] = useState<string>("");

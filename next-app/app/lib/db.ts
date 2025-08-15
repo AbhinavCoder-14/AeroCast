@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma"; // Updated import path
 
 // Prevent multiple instances of Prisma Client in development
 const globalForPrisma = globalThis as unknown as {
@@ -20,9 +20,9 @@ if (process.env.NODE_ENV !== "production") {
 async function testConnection() {
   try {
     await prisma.$connect();
-    console.log(" Database connected successfully");
+    console.log("✅ Database connected successfully");
   } catch (error) {
-    console.error(" Database connection failed:", error);
+    console.error("❌ Database connection failed:", error);
     console.error("Make sure your database is running and DATABASE_URL is correct");
     console.error("Current DATABASE_URL:", process.env.DATABASE_URL ? "Set" : "Not set");
   }
