@@ -17,6 +17,8 @@ services:
       timeout: 5s
       retries: 5
 
+    
+
   # Next.js Web Application Service (Development)
   # webapp:
   #   image: node:18-alpine
@@ -45,5 +47,17 @@ services:
   #       npm run dev
   #     "
 
+    # 2. The Python Worker Service
+  worker:
+    build:
+      context: ./python-worker
+      dockerfile: Dockerfile
+    volumes:
+      - ./python-worker:/app
+    environment:
+      - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
+    depends_on:
+      - postgres
+
 volumes:
-  postgres-data:  
+  postgres-data:
