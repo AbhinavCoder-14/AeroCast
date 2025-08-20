@@ -71,6 +71,9 @@ export async function getCurrentWeather(city: string) {
   }
 }
 
+
+
+
 export async function POST(request: Request) {
   try {
     console.log("[API] POST request received");

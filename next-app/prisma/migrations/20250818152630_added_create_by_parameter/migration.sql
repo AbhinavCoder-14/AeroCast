@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "public"."jobs" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "result_data" TEXT NOT NULL DEFAULT 'None';
