@@ -51,7 +51,7 @@ export async function getCurrentWeather(city: string) {
           latitude,
           longitude,
           current: "temperature_2m,weather_code",
-        },
+        
         timeout: 10000, // 10 second timeout
       }
     );

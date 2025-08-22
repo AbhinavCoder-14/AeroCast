@@ -142,7 +142,7 @@ def process_job(job):
     # temp_vs_hour_today = hourly_df[['time', 'temperature_2m',]].rename(columns={'temperature_2m': 'temperature'})
     # temp_vs_hour_today = hourly_df[['time', 'temperature_2m',]].rename(columns={'temperature_2m': 'temperature'})
     
-    # print(temp_vs_hour_today)
+    print(temp_vs_hour_today)
 
     # Step D: Combine all results into a single dictionary
     final_result = {
