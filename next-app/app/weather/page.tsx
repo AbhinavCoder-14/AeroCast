@@ -19,7 +19,6 @@ interface WeatherCardProps {
   city: string;
 }
 
-
 const getWeatherInfo = (
   code: number
 ): { icon: string; description: string } => {
@@ -45,30 +44,44 @@ const getWeatherInfo = (
   return weatherMap[code] || { icon: "❓", description: "Unknown" };
 };
 
+// Mock hourly data for the past 24 hours
+interface HourlyDataPoint {
+  hour: string;
+  value: number;
+  time: number;
+}
 
- // Mock hourly data for the past 24 hours
-  const hourlyData = {
-    temperature: Array.from({length: 24}, (_, i) => ({
-      hour: `${23-i}:00`,
-      value: 18 + Math.random() * 12,
-      time: i
-    })).reverse(),
-    humidity: Array.from({length: 24}, (_, i) => ({
-      hour: `${23-i}:00`,
-      value: 45 + Math.random() * 40,
-      time: i
-    })).reverse(),
-    windSpeed: Array.from({length: 24}, (_, i) => ({
-      hour: `${23-i}:00`,
-      value: 5 + Math.random() * 20,
-      time: i
-    })).reverse(),
-    pressure: Array.from({length: 24}, (_, i) => ({
-      hour: `${23-i}:00`,
-      value: 1005 + Math.random() * 20,
-      time: i
-    })).reverse()
-  };
+interface HourlyData {
+  temperature: HourlyDataPoint[];
+  humidity: HourlyDataPoint[];
+  windSpeed: HourlyDataPoint[];
+  pressure: HourlyDataPoint[];
+}
+
+
+const generateHourlyData = (
+  baseValue: number,
+  range: number
+): HourlyDataPoint[] => {
+  return Array.from(
+    { length: 24 },
+    (_, i): HourlyDataPoint => ({
+      hour: `${23 - i}:00`,
+      value: baseValue + Math.random() * range,
+      time: i,
+    })
+  ).reverse();
+};
+
+const hourlyData: HourlyData = {
+  temperature: generateHourlyData(18, 12),
+  humidity: generateHourlyData(45, 40),
+  windSpeed: generateHourlyData(5, 20),
+  pressure: generateHourlyData(1005, 20),
+};
+
+
+
 
 export default function WeatherPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -81,7 +94,7 @@ export default function WeatherPage() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [searchedCity, setSearchedCity] = useState<string>("");
 
-  const [tempData,setTempData] = useState<string | null>()
+  const [tempData, setTempData] = useState<string | null>();
 
   const handleSearch = async (city: string) => {
     // setIsLoading(true);
@@ -168,25 +181,16 @@ export default function WeatherPage() {
           </div>
 
           <div className="border-2 max-w-lg flex justify-center flex-wrap m-auto">
-            <div className="m-1">
-              Humidity: {currentWeather.Humidity}
-            </div>
-            <div className="m-1">
-              Wind Speed: {currentWeather.Wind_speed}
-            </div>
+            <div className="m-1">Humidity: {currentWeather.Humidity}</div>
+            <div className="m-1">Wind Speed: {currentWeather.Wind_speed}</div>
 
-            <div className="m-1">
-              Pressure: {currentWeather.Pressure}
-            </div>
+            <div className="m-1">Pressure: {currentWeather.Pressure}</div>
 
-            <div className="m-1">
-              Visibility: {currentWeather.Visibility}
-            </div>
+            <div className="m-1">Visibility: {currentWeather.Visibility}</div>
           </div>
 
           <div className="chart">
-            <HourlyChart data={hourlyData}/>
-
+            <HourlyChart data={hourlyData} />
           </div>
         </div>
       )}
