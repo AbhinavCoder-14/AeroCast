@@ -2,7 +2,10 @@
 
 import HourlyChart from "@/components/hourlyChart";
 import SearchBar from "@/components/SearchBar";
-import { useState } from "react";
+import PageSelectorBar from "@/components/PageSelecterBar"
+import HistoricalChart from "@/components/HistroicalCharts"
+
+import { act, useState } from "react";
 
 interface WeatherData {
   temperature_2m: number;
@@ -81,8 +84,6 @@ const hourlyData: HourlyData = {
 };
 
 
-
-
 export default function WeatherPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +96,8 @@ export default function WeatherPage() {
   const [searchedCity, setSearchedCity] = useState<string>("");
 
   const [tempData, setTempData] = useState<string | null>();
+
+  const [activeSection, setActiveSection] = useState<number>(1);
 
   const handleSearch = async (city: string) => {
     // setIsLoading(true);
@@ -165,7 +168,9 @@ export default function WeatherPage() {
         </div>
       )}
 
-      {currentWeather && searchedCity && (
+      <PageSelectorBar activeSection={activeSection} OnSectionChange={setActiveSection}/>
+
+      {currentWeather && searchedCity && (activeSection===1) && (
         <div className="border-2 flex justify-center align-middle flex-col ">
           <div className="text-center mt-6 p-6 bg-black-400 rounded-lg max-w-md mx-auto">
             <h2 className="text-6xl font-semibold mb-4">{searchedCity}</h2>
@@ -194,6 +199,24 @@ export default function WeatherPage() {
           </div>
         </div>
       )}
+
+
+      {currentWeather && searchedCity && (activeSection===2) && (
+
+        <div>
+
+          <HistoricalChart currentCity={searchedCity} />
+
+
+
+
+          
+        </div>
+
+
+      )}
+
+
     </div>
   );
 }
