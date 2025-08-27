@@ -47,6 +47,7 @@ const getWeatherInfo = (
   return weatherMap[code] || { icon: "❓", description: "Unknown" };
 };
 
+
 // Mock hourly data for the past 24 hours
 interface HourlyDataPoint {
   hour: string;
@@ -171,7 +172,7 @@ export default function WeatherPage() {
       <PageSelectorBar activeSection={activeSection} OnSectionChange={setActiveSection}/>
 
       {currentWeather && searchedCity && (activeSection===1) && (
-        <div className="border-2 flex justify-center align-middle flex-col ">
+        <div className="flex justify-center align-middle flex-col ">
           <div className="text-center mt-6 p-6 bg-black-400 rounded-lg max-w-md mx-auto">
             <h2 className="text-6xl font-semibold mb-4">{searchedCity}</h2>
             <div className="text-8xl">{icon}</div>
@@ -185,7 +186,7 @@ export default function WeatherPage() {
             )}
           </div>
 
-          <div className="border-2 max-w-lg flex justify-center flex-wrap m-auto">
+          <div className="max-w-lg flex justify-around flex-wrap m-auto mb-3 p-3 border border-white/20 bg-white/10 rounded-3xl">
             <div className="m-1">Humidity: {currentWeather.Humidity}</div>
             <div className="m-1">Wind Speed: {currentWeather.Wind_speed}</div>
 

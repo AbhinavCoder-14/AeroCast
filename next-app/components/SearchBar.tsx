@@ -8,7 +8,8 @@ interface SearchBarProps {
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
   // Initialize with empty string instead of undefined
-  const [city, setCity] = useState<string>("New York");
+  const [city, setCity] = useState<string>("");
+  // const [city, setCity] = useState<string>("New York");
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,7 +27,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       <input
         type="text"
         value={city} // Now always controlled with a string value
-        onChange={(e) => setCity("New York")}
+        onChange={(e) => setCity(e.target.value)} 
         placeholder="Enter city name..."
         className="flex-grow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-2 border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition"
       />
