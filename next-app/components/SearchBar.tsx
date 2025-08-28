@@ -1,5 +1,6 @@
 "use client";
 import axios from "axios";
+import { Fascinate } from "next/font/google";
 import { useEffect, useState } from "react";
 
 interface SearchBarProps {
@@ -12,9 +13,17 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [suggestions, setSuggrestion] = useState<any>([]);
 
+  const [isDropDownVisable,setIsDropDownVisible] = useState<boolean>(false);
+
+
   useEffect(() => {
     if (city.length < 2) {
       setSuggrestion([]);
+      return;
+    }
+
+
+    if (!isDropDownVisable){
       return;
     }
 
@@ -39,7 +48,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
 
     return() => clearTimeout(timerId)
-  }, [city]);
+  }, [city,isDropDownVisable]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,15 +56,14 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     if (city.trim()) {
       onSearch(city.trim());
       setSuggrestion([])
+      setIsDropDownVisible(false)
     }
   };
 
   const handleSuggestionClick = (suggestion:any) =>{
     setCity(suggestion)
     setSuggrestion([])
-    setIsLoading(false)
-
-    
+    setIsDropDownVisible(false)    
   }
 
 
@@ -64,13 +72,14 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       onSubmit={handleSubmit}
       className="flex flex-col items-center gap-2 mb-6 w-full max-w-md mx-auto justify-around"
     >
-      <div>
+      <div className="w-[500px] flex flex-row">
         <input
           type="text"
           value={city}
           onChange={(e) => setCity(e.target.value)}
+          onFocus={() => setIsDropDownVisible(true)}
           placeholder="Enter city name..."
-          className="flex-grow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-2 border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition"
+          className={` flex-grow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition`}
         />
         <button
           type="submit"
@@ -80,16 +89,17 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         </button>
       </div>
       
-      {(isLoading || suggestions.length > 0) && (
+      {(isDropDownVisable || suggestions.length > 0) && (
         <div className="">
           {isLoading ? (
 
-            <div className="text-2xl">Loading...</div>
+            <div className="text-2xl"></div>
           ):(
-            <ul className="suggestionBox border-2 text-center m-1 text-xl font-bold">
+            <ul className={`${city.length>2 ? "visible" : "invisible"} suggestionBox text-left bg-white rounded-lg shadow-lg max-h-60 text-white text-[16px] w-[500px] border-2 border-[#364153]`}>
+
 
               {suggestions.map((suggestion:any,index:number)=>(
-                <li key={index} onClick={()=> handleSuggestionClick(suggestion)}>
+                <li key={index} className="cursor-pointer px-[5px] py-[5px] m-0 bg-[#364153] hover:bg-[#5e6b80]" onClick={()=> handleSuggestionClick(suggestion)}>
                   {suggestion}
                 </li>
               ))}
