@@ -1,16 +1,46 @@
 "use client";
-import { useState } from "react";
+import axios from "axios";
+import { time } from "console";
+import { useEffect, useState } from "react";
 
 interface SearchBarProps {
   onSearch: (city: string) => void;
 }
 
-
 export default function SearchBar({ onSearch }: SearchBarProps) {
-  // Initialize with empty string instead of undefined
   const [city, setCity] = useState<string>("");
-  // const [city, setCity] = useState<string>("New York");
-  
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [suggestions, setSuggrestion] = useState<any>([]);
+
+  useEffect(() => {
+    if (city.length < 2) {
+      setSuggrestion([]);
+      return;
+    }
+
+    const timerId = setTimeout(async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`/api/search-suggestions?q=${city}`);
+        const data = response.data;
+
+        if (data.suggestions) {
+          setSuggrestion(data.suggestions);
+        }
+      } catch (error) {
+        console.log("error while callin this api of search suggestions");
+        setSuggrestion([]);
+      }
+
+      
+      setIsLoading(false);
+    }, 300);
+
+
+
+    return() => clearTimeout(timerId)
+  }, [city]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -19,6 +49,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     }
   };
 
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -26,8 +57,8 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     >
       <input
         type="text"
-        value={city} // Now always controlled with a string value
-        onChange={(e) => setCity(e.target.value)} 
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
         placeholder="Enter city name..."
         className="flex-grow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-2 border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition"
       />

@@ -121,6 +121,9 @@ export default function WeatherPage() {
     });
     setIsLoading(false);
 
+
+
+    
     // try {
     //   const response = await fetch("/api/jobs", {
     //     method: "POST",
