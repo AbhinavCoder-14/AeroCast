@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+
 // This is the shape of a single data point in the array we receive
 interface ChartDataPoint {
   hour: string;
@@ -26,6 +27,7 @@ interface HourlyChartProps {
   windSpeed: ChartDataPoint[];
   pressure: ChartDataPoint[];
 }
+
 
 interface FinalHourlyChartProps {
   data: HourlyChartProps;

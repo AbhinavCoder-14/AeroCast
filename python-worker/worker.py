@@ -9,7 +9,6 @@ from datetime import datetime
 
 
 
-
 # DATABASE_URL = os.getenv("DATABASE_URL")
 
 # if not DATABASE_URL:
@@ -30,7 +29,7 @@ while engine is None:
         print("Retrying in 5 seconds")
         time.sleep(5)
 
-    
+
         
 def get_and_lock_pending_job(connection):
     """
@@ -67,7 +66,7 @@ def process_job(job):
     city = job['city']
     print(f"Processing job for {city}...")
 
-    geo_response = requests.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json")
+    geo_response = requests.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city.split(",")[0]}&count=1&language=en&format=json")
     geo_response.raise_for_status()
     geo_data = geo_response.json()
     if not geo_data.get('results'):
@@ -137,12 +136,12 @@ def process_job(job):
     # rainy_days_count = int(last_90_days_df[last_90_days_df['precipitation_sum'] > 1.0].count(['time'])
     
     
-    temp_vs_hour_today = hourly_df[['time', 'temperature_2m',]].rename(columns={'temperature_2m': 'temperature'})
+    param_vs_hour_today = hourly_df[['time', 'temperature_2m','relative_humidity_2m','wind_speed_10m','precipitation_probability']].rename(columns={'temperature_2m': 'temperature','relative_humidity_2m':'humidity','wind_speed_10m':"windSpeed","precipitation_probability":"pressure"})
     
     # temp_vs_hour_today = hourly_df[['time', 'temperature_2m',]].rename(columns={'temperature_2m': 'temperature'})
     # temp_vs_hour_today = hourly_df[['time', 'temperature_2m',]].rename(columns={'temperature_2m': 'temperature'})
     
-    print(temp_vs_hour_today)
+    print(param_vs_hour_today)
 
     # Step D: Combine all results into a single dictionary
     final_result = {
@@ -153,7 +152,7 @@ def process_job(job):
             },
         # We can still include the chart data if we want
             'chart_data': {
-                'hourly_today': temp_vs_hour_today.to_dict(orient='records'),
+                'hourly_today': param_vs_hour_today.to_dict(orient='records'),
                 
                 # 'daily_yearly': temp_vs_day_yearly.to_dict(orient='records')
             }
