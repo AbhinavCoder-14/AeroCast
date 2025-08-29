@@ -10,11 +10,11 @@ import { act, useState } from "react";
 interface WeatherData {
   temperature_2m: number;
   weather_code: number;
-  Humidity: number;
-  Wind_speed: number;
-  Pressure: number;
-  Visibility: number;
-  feels_like: number;
+  relative_humidity_2m: number;
+  wind_speed_10m: number;
+  pressure_msl: number;
+  visibility: number;
+  apparent_temperature: number;
 }
 
 interface WeatherCardProps {
@@ -101,54 +101,54 @@ export default function WeatherPage() {
   const [activeSection, setActiveSection] = useState<number>(1);
 
   const handleSearch = async (city: string) => {
-    // setIsLoading(true);
-    // setError(null);
-    // setSearchedCity(city);
-    // setJobId(null);
-    // setCurrentWeather(null);
-
+    setIsLoading(true);
     setError(null);
     setSearchedCity(city);
     setJobId(null);
-    setCurrentWeather({
-      temperature_2m: 30,
-      weather_code: 1,
-      Humidity: 65,
-      Wind_speed: 12,
-      Pressure: 1013,
-      Visibility: 10,
-      feels_like: 34,
-    });
-    setIsLoading(false);
+    setCurrentWeather(null);
+
+    // setError(null);
+    // setSearchedCity(city);
+    // setJobId(null);
+    // setCurrentWeather({
+    //   temperature_2m: 30,
+    //   weather_code: 1,
+    //   Humidity: 65,
+    //   Wind_speed: 12,
+    //   Pressure: 1013,
+    //   Visibility: 10,
+    //   feels_like: 34,
+    // });
+    // setIsLoading(false);
 
 
 
     
-    // try {
-    //   const response = await fetch("/api/jobs", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({ city }),
-    //   });
+    try {
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ city }),
+      });
 
-    //   const data = await response.json();
+      const data = await response.json();
 
-    //   if (!response.ok) {
-    //     throw new Error(data.error || 'Failed to fetch weather data');
-    //   }
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch weather data');
+      }
 
-    //   setCurrentWeather(data.currentWeather);
-    //   setJobId(data.jobId);
-    //   console.log("API Response:", data);
+      setCurrentWeather(data.currentWeather);
+      setJobId(data.jobId);
+      console.log("API Response:", data);
 
-    // } catch (err) {
-    //   console.error("Search error:", err);
-    //   setError(err instanceof Error ? err.message : "Failed to fetch weather data");
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    } catch (err) {
+      console.error("Search error:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch weather data");
+    } finally {
+      setIsLoading(false);
+    }
   };
   const { icon, description } = currentWeather
     ? getWeatherInfo(currentWeather.weather_code)
@@ -190,12 +190,12 @@ export default function WeatherPage() {
           </div>
 
           <div className="max-w-lg flex justify-around flex-wrap m-auto mb-3 p-3 border border-white/20 bg-white/10 rounded-3xl">
-            <div className="m-1">Humidity: {currentWeather.Humidity}</div>
-            <div className="m-1">Wind Speed: {currentWeather.Wind_speed}</div>
+            <div className="m-1">Humidity: {currentWeather.relative_humidity_2m}</div>
+            <div className="m-1">Wind Speed: {currentWeather.wind_speed_10m}</div>
 
-            <div className="m-1">Pressure: {currentWeather.Pressure}</div>
+            <div className="m-1">Pressure: {currentWeather.pressure_msl}</div>
 
-            <div className="m-1">Visibility: {currentWeather.Visibility}</div>
+            <div className="m-1">Visibility: {currentWeather.visibility}</div>
           </div>
 
           <div className="chart">
@@ -209,12 +209,7 @@ export default function WeatherPage() {
 
         <div>
 
-          <HistoricalChart currentCity={searchedCity} />
-
-
-
-
-          
+          <HistoricalChart currentCity={searchedCity} />          
         </div>
 
 

@@ -20,13 +20,13 @@ interface currentWeather {
 
 export async function getCurrentWeather(city: string) {
   try {
-    console.log(`[Weather API] Fetching coordinates for city: ${city}`);
+    console.log(`[Weather API] Fetching coordinates for city: ${city.split(",")[0]}`);
     
     const geoRes = await axios.get<geoCorrdinates>(
       `https://geocoding-api.open-meteo.com/v1/search`,
       {
         params: {
-          name: city,
+          name:city.split(",")[0],
           count: 1,
           language: "en",
           format: "json",
@@ -50,10 +50,11 @@ export async function getCurrentWeather(city: string) {
         params: {
           latitude,
           longitude,
-          current: "temperature_2m,weather_code",
+          current: "temperature_2m,weather_code,relative_humidity_2m,apparent_temperature,pressure_msl,visibility,wind_speed_10m",
         
         timeout: 10000, // 10 second timeout
       }
+    }
     );
 
     console.log(`[Weather API] Weather data received for ${city}`);
@@ -134,7 +135,7 @@ export async function POST(request: Request) {
         {
           jobId: newJob.jobId,
           error: "Weather data temporarily unavailable",
-          currentWeather: null
+          currentWeather: currentWeatherData
         },
         { status: 201 }
       );
