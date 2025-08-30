@@ -57,7 +57,7 @@ def get_and_lock_pending_job(connection):
             print('all set --------------')
             return {'jobId': job_id, 'city': city}
     return None
-    
+
     
     
     
@@ -108,7 +108,7 @@ def process_job(job):
     daily_df = pd.DataFrame(historical_data['daily'])
     daily_df['time'] = pd.to_datetime(daily_df['time'])
     
-    print(daily_df)
+    # print(daily_df)
     
 
     hourly_df = pd.DataFrame(forecast_data['hourly'])
