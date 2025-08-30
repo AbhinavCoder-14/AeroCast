@@ -1,11 +1,15 @@
 "use client";
 
 import axios from "axios";
-import { Fascinate } from "next/font/google";
 import { useState, useRef, useEffect } from "react";
 
+// This interface defines the final shape of the data we expect from the Python worker.
+// It's important to keep this in sync with what your worker.py script produces.
 interface AnalysisData {
-  insights: {};
+  insights: {
+    hottest_day: { date: string; temp: number };
+    avg_temp_year: number;
+  };
   chart_data: {
     hourly_today: {
       time: string;
@@ -16,28 +20,31 @@ interface AnalysisData {
       wind_speed_10m: number;
     }[];
     daily_yearly: {
-      //   time: string;
-      //   temperature_2m_max: number;
-      //   temperature_2m_min: number;
+      time: string;
+      temperature_2m_max: number;
+      temperature_2m_min: number;
     }[];
   };
 }
 
-interface job {
+// This interface defines the shape of the Job object our API returns.
+interface Job {
   jobId: string;
   city: string;
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
-  result_data: string | null;
+  result_data: string | null; // The result_data from Python is a JSON string
   createdAt: string;
 }
 
-export const DataPolling = (jobId: string | null) => {
-  const [Final_Result, setFinal_Result] = useState<AnalysisData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// The custom hook to handle polling logic
+export const useDataPolling = (jobId: string | null) => {
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [pollingError, setPollingError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(()=>{
+  useEffect(() => {
+    // Helper function to safely stop any active polling
     const stopPolling = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -45,45 +52,52 @@ export const DataPolling = (jobId: string | null) => {
       }
     };
 
-    setFinal_Result(null);
-    setError(null);
+    // When the jobId changes, reset everything
+    setAnalysisData(null);
+    setPollingError(null);
     stopPolling();
 
     if (jobId) {
+      setIsPolling(true); // Start loading as soon as we have a jobId
+
       const poll = async () => {
         try {
-          setIsLoading(true);
-          const response = await axios.get(`api/jobs/${jobId}`);
-          const result: job = response.data;
+          // Poll the specific job status endpoint
+          const response = await axios.get(`/api/jobs/${jobId}`);
+          const result: Job = response.data;
 
-          if (result.status == "COMPLETED") {
+          if (result.status === "COMPLETED") {
             if (result.result_data) {
-              setFinal_Result(JSON.parse(result.result_data));
+              // If the job is done, parse the JSON data and set it
+              setAnalysisData(JSON.parse(result.result_data));
             }
-            setIsLoading(false);
+            setIsPolling(false);
             stopPolling();
           } else if (result.status === "FAILED") {
-            setError("Analysis failed. Please try again");
-            setIsLoading(false);
+            setPollingError("Analysis failed in the background worker.");
+            setIsPolling(false);
             stopPolling();
           }
+          // If status is PENDING or IN_PROGRESS, do nothing and let the interval call again.
         } catch (error: any) {
-          setError(error.message);
-          setIsLoading(false);
+          setPollingError("Failed to poll for job status.");
+          setIsPolling(false);
           stopPolling();
         }
       };
 
+      // Start polling immediately, then repeat every 3 seconds
       poll();
       intervalRef.current = setInterval(poll, 3000);
     } else {
-      setIsLoading(false);
+      setIsPolling(false);
     }
 
+    // This is a cleanup function. It runs when the component unmounts or the jobId changes.
     return () => {
       stopPolling();
     };
-  }, [jobId]);
+  }, [jobId]); // This entire effect function re-runs ONLY when the jobId changes
 
-  return {Final_Result,isLoading,error}
+  return { analysisData, isPolling, pollingError };
 };
