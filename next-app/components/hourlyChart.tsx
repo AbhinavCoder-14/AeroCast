@@ -2,6 +2,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { DataPolling } from "@/app/hooks/datapolling";
+
+
 import {
   LineChart,
   Line,
@@ -43,9 +46,11 @@ const parameterOptions :Array<{value:WeatherParameter;label:string}> =[
 ];
 
 
-const HourlyChart = ({ data }: FinalHourlyChartProps) => {
+const HourlyChart = ({ data }: FinalHourlyChartProps,{DataPolling}:any) => {
   const [SelectedGrpahParameter, setSelectedGrpahParameter] =
     useState<WeatherParameter>("temperature");
+    // const { data: analysisData, isLoading: isPolling, error: pollingError } = DataPolling(jobId);
+
 
   return (
     <div className="bg-white/10 w-[86%] backdrop-blur-lg rounded-3xl p-7 border border-white/20 shadow-2xl m-auto">

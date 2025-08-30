@@ -37,7 +37,7 @@ export const DataPolling = (jobId: string | null) => {
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
+  useEffect(()=>{
     const stopPolling = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -72,14 +72,18 @@ export const DataPolling = (jobId: string | null) => {
           setIsLoading(false);
           stopPolling();
         }
-
-        poll();
-        intervalRef.current = setInterval(poll, 3000);
       };
+
+      poll();
+      intervalRef.current = setInterval(poll, 3000);
     } else {
       setIsLoading(false);
     }
 
-    return { Final_Result, isLoading, error };
+    return () => {
+      stopPolling();
+    };
   }, [jobId]);
+
+  return {Final_Result,isLoading,error}
 };

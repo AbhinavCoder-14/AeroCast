@@ -6,6 +6,7 @@ import PageSelectorBar from "@/components/PageSelecterBar"
 import HistoricalChart from "@/components/HistroicalCharts"
 
 import { act, useState } from "react";
+import { DataPolling } from "../hooks/datapolling";
 
 interface WeatherData {
   temperature_2m: number;
@@ -199,7 +200,7 @@ export default function WeatherPage() {
           </div>
 
           <div className="chart">
-            <HourlyChart data={hourlyData} />
+            <HourlyChart data={hourlyData} DataPolling={DataPolling(jobId)} />
           </div>
         </div>
       )}
