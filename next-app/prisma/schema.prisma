@@ -16,7 +16,7 @@ model Jobs {
   jobId  String @id @default(uuid())
   city   String @map("city")
   status String @default("PENDING") @map("status")
-  result_data String @default("None") @map("result_data")
+  result_data String @default("hello") @map("result_data")
   createdAt DateTime @default(now())
 
   @@map("jobs")
