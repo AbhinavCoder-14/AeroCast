@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     // Await the params object before accessing its properties
-    console.log("Entered in the [jobId] Api route for houly chart data")
+    console.log("Entered in the [jobId] Api route for hourly chart data")
     const resolvedParams = await params;
     const jobId = resolvedParams.jobId;
 
@@ -17,9 +17,16 @@ export async function GET(
       where: {
         jobId: jobId,
       },
+      select: {
+        jobId: true,
+        city: true,
+        status: true,
+        result_data: true,  // ✅ Make sure to include result_data
+        createdAt: true,
+      }
     });
-    console.log("------------------------",job)
-
+    
+    console.log("Complete job data:", job)
 
     if (!job) {
       return NextResponse.json(

@@ -6,10 +6,6 @@ import { useState, useRef, useEffect } from "react";
 // This interface defines the final shape of the data we expect from the Python worker.
 // It's important to keep this in sync with what your worker.py script produces.
 interface AnalysisData {
-  // insights: {
-  //   hottest_day: { date: string; temp: number };
-  //   avg_temp_year: number;
-  // };
   chart_data: {
     hourly_today: {
       time: string;
@@ -19,11 +15,6 @@ interface AnalysisData {
       pressure: number;
       windSpeed: number;
     }[];
-    // daily_yearly: {
-    //   time: string;
-    //   temperature_2m_max: number;
-    //   temperature_2m_min: number;
-    // }[];
   };
 }
 
@@ -51,8 +42,6 @@ export const useDataPolling = (jobId: string | null) => {
       }
     };
 
-    
-
     // When the jobId changes, reset everything
     setAnalysisData(null);
     setPollingError(null);
@@ -64,42 +53,51 @@ export const useDataPolling = (jobId: string | null) => {
       const poll = async () => {
         try {
           // Poll the specific job status endpoint
-          console.log("calling api name  [jobId]")
+          console.log("calling api name [jobId]")
           const response = await axios.get(`/api/jobs/${jobId}`);
           const result = response.data;
 
-          if (result.status){
+          console.log("Polling result:", result)
 
-          }
-          console.log("===========",result)
-
-          if (result['status'] == 'COMPLETED') {
-            console.log("completed job enterd********")
-            const response1 = await axios.get(`/api/jobs/${jobId}`);
-
-            const result1 = response1.data
-            console.log("******************************",result1)
-            if (result.result_data) {
-              console.log(`The Python work is done :${result.result_data}`)
-              
-              setAnalysisData(JSON.parse(result.result_data));
+          if (result.status === 'COMPLETED') {
+            console.log("Job completed successfully!")
+            
+            // Check if we have result_data
+            if (result.result_data && result.result_data !== 'hello' && result.result_data !== 'None') {
+              try {
+                console.log(`The Python work is done: ${result.result_data}`)
+                const parsedData = JSON.parse(result.result_data);
+                setAnalysisData(parsedData);
+                setIsPolling(false);
+                stopPolling();
+              } catch (parseError) {
+                console.error("Error parsing result_data:", parseError);
+                setPollingError("Failed to parse analysis data.");
+                setIsPolling(false);
+                stopPolling();
+              }
+            } else {
+              console.log("Job completed but no valid result_data found");
+              setPollingError("Job completed but no data was returned.");
               setIsPolling(false);
               stopPolling();
             }
           } 
-          
-          else if (result['status'] == "FAILED") {
+          else if (result.status === "FAILED") {
+            console.log("Job failed in worker")
             setPollingError("Analysis failed in the background worker.");
             setIsPolling(false);
             stopPolling();
-          
           }
-
-          else{
-            console.log("===========not matched with anything================")
+          else if (result.status === "PENDING" || result.status === "IN_PROGRESS") {
+            console.log(`Job status: ${result.status} - continuing to poll...`)
+            // Continue polling - do nothing here
           }
-          // If status is PENDING or IN_PROGRESS, do nothing and let the interval call again.
+          else {
+            console.log("Unknown job status:", result.status)
+          }
         } catch (error: any) {
+          console.error("Polling error:", error);
           setPollingError("Failed to poll for job status.");
           setIsPolling(false);
           stopPolling();
@@ -113,9 +111,9 @@ export const useDataPolling = (jobId: string | null) => {
       setIsPolling(false);
     }
 
-    // This is a cleanup function. It runs when the component unmounts or the jobId changes.
+    // Cleanup function - runs when component unmounts or jobId changes
     return () => {
-      // stopPolling(); 
+      stopPolling(); 
     };
   }, [jobId]); // This entire effect function re-runs ONLY when the jobId changes
 
