@@ -212,24 +212,6 @@ export default function WeatherPage() {
               Visibility: {currentWeather.visibility / 1000} km
             </div>
           </div>
-
-          {/* DEBUG SECTION */}
-          <div className="mt-4 p-4 bg-yellow-100 text-black rounded-lg max-w-4xl mx-auto">
-            <h3 className="font-bold mb-2">DEBUG INFO:</h3>
-            <p>Job ID: {jobId || "None"}</p>
-            <p>Is Polling: {isPolling ? "Yes" : "No"}</p>
-            <p>Polling Error: {pollingError || "None"}</p>
-            <p>Has Analysis Data: {analysisData ? "Yes" : "No"}</p>
-            <p>Has Formatted Data: {formattedHourlyData ? "Yes" : "No"}</p>
-            {analysisData && (
-              <details className="mt-2">
-                <summary>Raw Analysis Data (click to expand)</summary>
-                <pre className="text-xs mt-2 max-h-40 overflow-auto">
-                  {JSON.stringify(analysisData, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
         </div>
       )}
 

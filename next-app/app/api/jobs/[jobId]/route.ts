@@ -16,13 +16,6 @@ export async function GET(
     const job = await prisma.jobs.findUnique({
       where: {
         jobId: jobId,
-      },
-      select: {
-        jobId: true,
-        city: true,
-        status: true,
-        result_data: true,  // ✅ Make sure to include result_data
-        createdAt: true,
       }
     });
     
