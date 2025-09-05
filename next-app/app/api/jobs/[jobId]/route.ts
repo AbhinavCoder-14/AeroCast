@@ -20,11 +20,12 @@ export async function GET(
     });
     console.log("------------------------",job)
 
+
     if (!job) {
       return NextResponse.json(
-        { error: "Job not found" },
+        { error: "Job not found"},
         { status: 404 }
-      ); 
+      );
     }
 
     return NextResponse.json(job);

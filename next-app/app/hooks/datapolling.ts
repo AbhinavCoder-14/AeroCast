@@ -51,6 +51,8 @@ export const useDataPolling = (jobId: string | null) => {
       }
     };
 
+    
+
     // When the jobId changes, reset everything
     setAnalysisData(null);
     setPollingError(null);
@@ -64,10 +66,19 @@ export const useDataPolling = (jobId: string | null) => {
           // Poll the specific job status endpoint
           console.log("calling api name  [jobId]")
           const response = await axios.get(`/api/jobs/${jobId}`);
-          const result: Job = response.data;
-          console.log(result)
+          const result = response.data;
+
+          if (result.status){
+
+          }
+          console.log("===========",result)
 
           if (result['status'] == 'COMPLETED') {
+            console.log("completed job enterd********")
+            const response1 = await axios.get(`/api/jobs/${jobId}`);
+
+            const result1 = response1.data
+            console.log("******************************",result1)
             if (result.result_data) {
               console.log(`The Python work is done :${result.result_data}`)
               
