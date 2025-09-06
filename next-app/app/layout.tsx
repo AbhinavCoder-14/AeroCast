@@ -30,7 +30,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`} 
       >
         <div className="common">
-          <Link href="/weather">weather</Link>
 
         </div>
 

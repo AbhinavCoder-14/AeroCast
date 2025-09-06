@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 
-// The second argument to the GET function contains the params.
-// We destructure it to get the `params` object.
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ jobId: string }> }
@@ -30,8 +29,7 @@ export async function GET(
 
     return NextResponse.json(job);
   } catch (error: any) {
-    // It's helpful to log the specific job ID that failed.
-    console.error(`[API Get Job] Error:`, error);
+      console.error(`[API Get Job] Error:`, error);
     return NextResponse.json(
       { error: "An internal server error occurred." },
       { status: 500 }

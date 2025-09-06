@@ -3,8 +3,6 @@
 import axios from "axios";
 import { useState, useRef, useEffect } from "react";
 
-// This interface defines the final shape of the data we expect from the Python worker.
-// It's important to keep this in sync with what your worker.py script produces.
 interface AnalysisData {
   chart_data: {
     hourly_today: {
@@ -18,7 +16,6 @@ interface AnalysisData {
   };
 }
 
-// This interface defines the shape of the Job object our API returns.
 interface Job {
   jobId: string;
   city: string;
@@ -48,16 +45,15 @@ export const useDataPolling = (jobId: string | null) => {
     stopPolling();
 
     if (jobId) {
-      setIsPolling(true); // Start loading as soon as we have a jobId
+      setIsPolling(true); 
 
       const poll = async () => {
         try {
           // Poll the specific job status endpoint
-          console.log("calling api name [jobId]")
           const response = await axios.get(`/api/jobs/${jobId}`);
           const result = response.data;
 
-          console.log("Polling result:", result)
+          // console.log("Polling result:", result)
 
           if (result.status === 'COMPLETED') {
             console.log("Job completed successfully!")
@@ -65,7 +61,7 @@ export const useDataPolling = (jobId: string | null) => {
             // Check if we have result_data
             if (result.result_data && result.result_data !== 'hello' && result.result_data !== 'None') {
               try {
-                console.log(`The Python work is done: ${result.result_data}`)
+                // console.log(`The Python work is done: ${result.result_data}`)
                 const parsedData = JSON.parse(result.result_data);
                 setAnalysisData(parsedData);
                 setIsPolling(false);
@@ -90,7 +86,7 @@ export const useDataPolling = (jobId: string | null) => {
             stopPolling();
           }
           else if (result.status === "PENDING" || result.status === "IN_PROGRESS") {
-            console.log(`Job status: ${result.status} - continuing to poll...`)
+            // console.log(`Job status: ${result.status} - continuing to poll...`)
             // Continue polling - do nothing here
           }
           else {
@@ -104,14 +100,12 @@ export const useDataPolling = (jobId: string | null) => {
         }
       };
 
-      // Start polling immediately, then repeat every 3 seconds
       poll();
       intervalRef.current = setInterval(poll, 3000);
     } else {
       setIsPolling(false);
     }
 
-    // Cleanup function - runs when component unmounts or jobId changes
     return () => {
       stopPolling(); 
     };

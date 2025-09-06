@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 import json
 from sqlalchemy import create_engine, text
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Connection to Db
 engine = None
@@ -61,6 +61,44 @@ def process_job(job):
         print(f"Found coordinates: {lat}, {lon}")
 
         # Step 2: Get today's hourly forecast
+
+        
+        
+        today = datetime.now()
+        one_year_ago = today.replace(year=today.year - 1)
+        # archive_url = (
+        #     f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
+        #     f"&start_date={one_year_ago.strftime('%Y-%m-%d')}&end_date={today.strftime('%Y-%m-%d')}"
+        #     "&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean, apparent_temperature_max,precipitation_sum,wind_speed_10m_max&monthly=temperature_2m_mean,temperature_2m_max,temperature_2m_min"
+        #     "&timezone=auto"
+        # )
+        
+        # Get today's date
+        today = datetime.now()
+        end_date = today - timedelta(days=1)
+        start_date = end_date.replace(year=end_date.year - 1) + timedelta(days=1)
+        print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+
+        # Step 3: Call the correct historical archive API
+        archive_url = (
+            f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
+            f"&start_date={start_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
+            f"&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min"
+            f"&timezone=auto"
+        )
+            
+            
+        print(archive_url)
+        
+        archive_response = requests.get(archive_url)
+        archive_response.raise_for_status()
+        archive_data = archive_response.json()
+        
+        
+        print(f"-----000000000000000000 {archive_data}")
+        
+        
+        
         print("Fetching today's hourly forecast...")
         forecast_url = (
             f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
@@ -72,14 +110,17 @@ def process_job(job):
         forecast_response = requests.get(forecast_url)
         forecast_response.raise_for_status()
         forecast_data = forecast_response.json()
-        print("Forecast data received successfully")
-
-        # Step 3: Process hourly data
+        # print("Forecast data received successfully")
+        
+        
+        
+        
+        
         hourly_df = pd.DataFrame(forecast_data['hourly'])
         hourly_df['time'] = pd.to_datetime(hourly_df['time'])
         
-        print(f"Processed {len(hourly_df)} hourly data points")
-        print("Sample data:")
+        # print(f"Processed {len(hourly_df)} hourly data points")
+        # print("Sample data:")
         print(hourly_df.head())
 
         # Step 4: Format data for frontend
@@ -101,19 +142,22 @@ def process_job(job):
             #     'data_points': len(hourly_records)
             # },
             'chart_data': {
-                'hourly_today': hourly_records
+                'hourly_today': hourly_records,
+                'historical_records' : historical_records
             }
         }
         
-        print("Final result structure:")
+        # print("Final result structure:")
         # print(f"- Insights: {final_result['insights']}")
-        print(final_result['chart_data'])
+        # print(final_result['chart_data'])
         
         return json.dumps(final_result, default=str)
 
     except Exception as e:
         print(f"Error in process_job: {e}")
         raise
+
+
 
 def update_job_in_db(connection, job_id, status, result_data=None):
     """
