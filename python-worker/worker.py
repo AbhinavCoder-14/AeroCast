@@ -11,7 +11,7 @@ while engine is None:
     try:
         DATABASE_URL = "postgresql://weather:weatherdb@localhost:5432/weatherdb"
         engine = create_engine(DATABASE_URL)
-        print("Successfully connected to the postgress database.")
+        print("Successfully connected to the postgres database.")
     except Exception as e:
         print(f"database connection failed : {e}")
         print("Retrying in 5 seconds")
@@ -33,7 +33,6 @@ def get_and_lock_pending_job(connection):
 
         if result:
             job_id, city = result
-            # FIXED: Update status to 'IN_PROGRESS', not 'PENDING'
             lock_query = text("""
                 UPDATE "jobs" SET status = 'IN_PROGRESS' WHERE "jobId" = :job_id
             """)
@@ -49,7 +48,7 @@ def process_job(job):
     try:
         # Step 1: Get coordinates
         print(f"Getting coordinates for {city}...")
-        geo_response = requests.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city.split(',')[0]}&count=1&language=en&format=json")
+        geo_response = requests.get(f"https://geocoding-api.open-meteo.com/v1/search?name={city.split(',')[0]}&count=1&language=en&format=json", timeout=30)
         geo_response.raise_for_status()
         geo_data = geo_response.json()
         
@@ -61,44 +60,6 @@ def process_job(job):
         print(f"Found coordinates: {lat}, {lon}")
 
         # Step 2: Get today's hourly forecast
-
-        
-        
-        today = datetime.now()
-        one_year_ago = today.replace(year=today.year - 1)
-        # archive_url = (
-        #     f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
-        #     f"&start_date={one_year_ago.strftime('%Y-%m-%d')}&end_date={today.strftime('%Y-%m-%d')}"
-        #     "&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean, apparent_temperature_max,precipitation_sum,wind_speed_10m_max&monthly=temperature_2m_mean,temperature_2m_max,temperature_2m_min"
-        #     "&timezone=auto"
-        # )
-        
-        # Get today's date
-        today = datetime.now()
-        end_date = today - timedelta(days=1)
-        start_date = end_date.replace(year=end_date.year - 1) + timedelta(days=1)
-        print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
-
-        # Step 3: Call the correct historical archive API
-        archive_url = (
-            f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
-            f"&start_date={start_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
-            f"&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min"
-            f"&timezone=auto"
-        )
-            
-            
-        print(archive_url)
-        
-        archive_response = requests.get(archive_url)
-        archive_response.raise_for_status()
-        archive_data = archive_response.json()
-        
-        
-        print(f"-----000000000000000000 {archive_data}")
-        
-        
-        
         print("Fetching today's hourly forecast...")
         forecast_url = (
             f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
@@ -107,57 +68,89 @@ def process_job(job):
             "&timezone=auto"
         )
         
-        forecast_response = requests.get(forecast_url)
+        forecast_response = requests.get(forecast_url, timeout=30)
         forecast_response.raise_for_status()
         forecast_data = forecast_response.json()
-        # print("Forecast data received successfully")
+        print("Forecast data received successfully")
+
+        # Step 3: Get historical data (optional - for future use)
+        print("Fetching historical data...")
+        today = datetime.now()
+        end_date = today - timedelta(days=1)
+        start_date = end_date.replace(year=end_date.year - 1) + timedelta(days=1)
+        print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+
+        archive_url = (
+            f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
+            f"&start_date={start_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
+            f"&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max"
+            f"&timezone=auto"
+        )
         
+        print(f"Archive URL: {archive_url}")
         
-        
-        
-        
+        try:
+            archive_response = requests.get(archive_url, timeout=60)
+            archive_response.raise_for_status()
+            archive_data = archive_response.json()
+            print(f"Historical data received: {len(archive_data.get('daily', {}).get('time', []))} days")
+        except Exception as e:
+            print(f"Historical data fetch failed (non-critical): {e}")
+            archive_data = {'daily': {'time': [], 'temperature_2m_mean': [], 'temperature_2m_max': [], 'temperature_2m_min': [], 'precipitation_sum': [], 'wind_speed_10m_max': []}}
+
+        # Step 4: Process hourly forecast data
         hourly_df = pd.DataFrame(forecast_data['hourly'])
         hourly_df['time'] = pd.to_datetime(hourly_df['time'])
         
-        # print(f"Processed {len(hourly_df)} hourly data points")
-        # print("Sample data:")
+        print(f"Processed {len(hourly_df)} hourly data points")
+        print("Sample hourly data:")
         print(hourly_df.head())
 
-        # Step 4: Format data for frontend
+        # Step 5: Format hourly data for frontend
         hourly_records = []
         for _, row in hourly_df.iterrows():
             hourly_records.append({
                 'time': row['time'].isoformat(),
-                'temperature': float(row['temperature_2m']) if pd.notna(row['temperature_2m']) else 0,
-                'apparent_temperature': float(row['apparent_temperature']) if pd.notna(row['apparent_temperature']) else 0,
-                'humidity': float(row['relative_humidity_2m']) if pd.notna(row['relative_humidity_2m']) else 0,
-                'pressure': float(row['precipitation_probability']) if pd.notna(row['precipitation_probability']) else 0,
-                'windSpeed': float(row['wind_speed_10m']) if pd.notna(row['wind_speed_10m']) else 0
+                'temperature': float(row['temperature_2m']) if pd.notna(row['temperature_2m']) else 0.0,
+                'apparent_temperature': float(row['apparent_temperature']) if pd.notna(row['apparent_temperature']) else 0.0,
+                'humidity': float(row['relative_humidity_2m']) if pd.notna(row['relative_humidity_2m']) else 0.0,
+                'pressure': float(row['precipitation_probability']) if pd.notna(row['precipitation_probability']) else 0.0,
+                'windSpeed': float(row['wind_speed_10m']) if pd.notna(row['wind_speed_10m']) else 0.0
             })
 
-        # Step 5: Create final result
+        # Step 6: Process historical data (optional)
+        historical_records = []
+        if archive_data.get('daily') and archive_data['daily'].get('time'):
+            daily_df = pd.DataFrame(archive_data['daily'])
+            daily_df['time'] = pd.to_datetime(daily_df['time'])
+            
+            for _, row in daily_df.iterrows():
+                historical_records.append({
+                    'date': row['time'].isoformat(),
+                    'temp_mean': float(row['temperature_2m_mean']) if pd.notna(row['temperature_2m_mean']) else 0.0,
+                    'temp_max': float(row['temperature_2m_max']) if pd.notna(row['temperature_2m_max']) else 0.0,
+                    'temp_min': float(row['temperature_2m_min']) if pd.notna(row['temperature_2m_min']) else 0.0,
+                    'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
+                    'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0
+                })
+
+        # Step 7: Create final result
         final_result = {
-            # 'insights': {
-            #     'city': city,
-            #     'data_points': len(hourly_records)
-            # },
             'chart_data': {
                 'hourly_today': hourly_records,
-                'historical_records' : historical_records
+                'historical_records': historical_records
             }
         }
         
-        # print("Final result structure:")
-        # print(f"- Insights: {final_result['insights']}")
-        # print(final_result['chart_data'])
+        print(f"Final result created with {len(hourly_records)} hourly records and {len(historical_records)} historical records")
         
         return json.dumps(final_result, default=str)
 
     except Exception as e:
         print(f"Error in process_job: {e}")
+        import traceback
+        traceback.print_exc()
         raise
-
-
 
 def update_job_in_db(connection, job_id, status, result_data=None):
     """
@@ -210,6 +203,8 @@ def main_loop():
 
         except Exception as e:
             print(f"An error occurred while processing job {job['jobId'] if job else 'N/A'}: {e}")
+            import traceback
+            traceback.print_exc()
             if job:
                 try:
                     with engine.connect() as connection:
