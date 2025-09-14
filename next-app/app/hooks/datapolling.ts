@@ -31,7 +31,6 @@ export const useDataPolling = (jobId: string | null) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Helper function to safely stop any active polling
     const stopPolling = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -39,7 +38,6 @@ export const useDataPolling = (jobId: string | null) => {
       }
     };
 
-    // When the jobId changes, reset everything
     setAnalysisData(null);
     setPollingError(null);
     stopPolling();
