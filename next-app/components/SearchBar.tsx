@@ -70,7 +70,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col items-center gap-2 mb-6 w-full max-w-md mx-auto justify-around"
+      className="w-[26vw]"
     >
       <div className="w-[500px] flex flex-row">
         <input
@@ -79,7 +79,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           onChange={(e) => setCity(e.target.value)}
           onFocus={() => setIsDropDownVisible(true)}
           placeholder="Enter city name..."
-          className={` flex-grow bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition`}
+          className={` flex-grow mt-0 mr-[10px] bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white border-transparent focus:border-blue-500 focus:ring-0 rounded-lg px-4 py-2.5 text-base transition`}
         />
         <button
           type="submit"

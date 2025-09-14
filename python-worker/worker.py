@@ -118,7 +118,6 @@ def process_job(job):
                 'windSpeed': float(row['wind_speed_10m']) if pd.notna(row['wind_speed_10m']) else 0.0
             })
 
-        # Step 6: Process historical data (optional)
         historical_records = []
         if archive_data.get('daily') and archive_data['daily'].get('time'):
             daily_df = pd.DataFrame(archive_data['daily'])
@@ -133,8 +132,6 @@ def process_job(job):
                     'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
                     'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0
                 })
-
-        # Step 7: Create final result
         final_result = {
             'chart_data': {
                 'hourly_today': hourly_records,

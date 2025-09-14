@@ -74,7 +74,6 @@ export default function WeatherPage() {
   console.log("analysisData:", analysisData);
   console.log("pollingError:", pollingError);
 
-
   const handleSearch = async (city: string) => {
     setIsSearching(true);
     setSearchError(null);
@@ -129,7 +128,10 @@ export default function WeatherPage() {
       return null;
     }
 
-    console.log("=====================hourly_today data:", analysisData.chart_data.hourly_today);
+    console.log(
+      "=====================hourly_today data:",
+      analysisData.chart_data.hourly_today
+    );
 
     const format = (
       key: keyof (typeof analysisData.chart_data.hourly_today)[0]
@@ -160,26 +162,32 @@ export default function WeatherPage() {
   console.log("formattedHourlyData result:", formattedHourlyData);
 
   return (
-    <div className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Weather Search</h1>
-      <SearchBar onSearch={handleSearch} />
+    <div className="my-10">
+      <nav className=" bug align-middle m-auto border-2">
+        <div className="p-8 bug align-middle flex flex-row justify-between items-center m-auto">
+          <h1 className="text-3xl font-bold text-center">AeroCast</h1>
+          <SearchBar onSearch={handleSearch} />
+        </div>
 
+        {currentWeather && (
+          <PageSelectorBar
+            activeSection={activeSection}
+            OnSectionChange={setActiveSection}
+          />
+        )}
+      </nav>
       {isSearching && (
-        <div className="text-center mt-4">
-          <p>Loading weather data...</p>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+          <div className="text-center">
+
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
       )}
       {searchError && (
         <div className="text-center mt-4 p-4 bg-red-100 text-red-700 rounded-lg max-w-md mx-auto">
           <p>Error: {searchError}</p>
         </div>
-      )}
-
-      {currentWeather && (
-        <PageSelectorBar
-          activeSection={activeSection}
-          OnSectionChange={setActiveSection}
-        />
       )}
 
       {currentWeather && searchedCity && activeSection === 1 && (
