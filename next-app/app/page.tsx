@@ -114,9 +114,6 @@ export default function WeatherPage() {
 
   // Helper function to format the analysis data for the HourlyChart
   const getFormattedHourlyData = (): HourlyData | null => {
-    console.log("=== FORMATTING HOURLY DATA ===");
-    console.log("analysisData:", analysisData);
-
     if (!analysisData) {
       console.log("No analysisData available");
       return null;
@@ -128,11 +125,6 @@ export default function WeatherPage() {
       return null;
     }
 
-    console.log(
-      "=====================hourly_today data:",
-      analysisData.chart_data.hourly_today
-    );
-
     const format = (
       key: keyof (typeof analysisData.chart_data.hourly_today)[0]
     ) => {
@@ -143,7 +135,6 @@ export default function WeatherPage() {
         }),
         value: d[key] as number,
       }));
-      console.log(`Formatted ${key}:`, result);
       return result;
     };
 
@@ -163,13 +154,14 @@ export default function WeatherPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-weather-bg-start via-weather-bg-middle to-weather-bg-end text-white relative overflow-hidden bg-gradient-to-br from-slate-900 via-gray-900 to-zinc-900">
-
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] bg-[size:50px_50px] opacity-20"></div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-weather-emerald/10 via-transparent to-weather-teal/10"></div>
 
-      <nav className="p-8 bug align-middle flex flex-col border-b border-white/10 justify-between backdrop-blur-xl items-center m-auto bug align-middle m-auto border-2 border-b border-white/10 relative bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-elevation">
-        <div className="p-8 bug align-middle flex flex-row justify-between items-center m-auto w-[65%]">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-weather-emerald-light via-weather-teal to-weather-cyan bg-clip-text text-blue-600">AeroCast</h1>
+      <nav className="p-4 bug align-middle flex flex-col border-b border-white/10 justify-between backdrop-blur-xl items-center m-auto bug align-middle m-auto border-2 border-b border-white/10 relative bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-elevation">
+        <div className="p-2 bug align-middle flex flex-row justify-between items-center m-auto w-[65%]">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-weather-emerald-light via-weather-teal to-weather-cyan bg-clip-text text-blue-600">
+            AeroCast
+          </h1>
           <SearchBar onSearch={handleSearch} />
         </div>
 
@@ -181,11 +173,13 @@ export default function WeatherPage() {
         )}
       </nav>
       {isSearching && (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-          <div className="text-center">
-
-            <p className="text-gray-600">Loading...</p>
+        <div className="min-h-screen bg-gradient-to-br text-white flex flex-col items-center justify-center">
+          <div className="relative w-12 h-12">
+            <div className="w-10 h-10 rounded-full animate-spin
+            border-4 border-solid border-blue-500 border-t-transparent"></div>
+            {/* <div className="absolute inset-1.5 rounded-full bg-white dark:bg-slate-900"></div> */}
           </div>
+            <p className="text-gray-600">Loading...</p>
         </div>
       )}
       {searchError && (
@@ -205,7 +199,7 @@ export default function WeatherPage() {
             <p className="text-lg text-gray-600 mt-2">{description}</p>
             {jobId && (
               <p className="text-xs text-gray-500 mt-2">
-                Analysis Job ID: {jobId}
+                {/* Analysis Job ID: {jobId} */}
               </p>
             )}
           </div>
@@ -237,7 +231,7 @@ export default function WeatherPage() {
             <p className="text-center mt-4 text-red-500">{pollingError}</p>
           )}
           {analysisData ? (
-            <HistoricalChart currentCity={searchedCity} />
+            <HistoricalChart currentCity={searchedCity} analysisData={analysisData} />
           ) : (
             !isPolling && (
               <p className="text-center mt-4">No historical data available.</p>

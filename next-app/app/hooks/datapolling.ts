@@ -12,7 +12,23 @@ interface AnalysisData {
       humidity: number;
       pressure: number;
       windSpeed: number;
-    }[];
+    }[],
+    historical_avg_records:{
+      month:string;
+      temp_mean:number;
+      temp_max:number;
+      temp_min:number;
+      precipitation:number;
+      wind_max:number
+    }[],
+    historical_daily_records:{
+      'date':string;
+      'temp_mean':number;
+      'temp_max':number;
+      'temp_min':number;
+      'precipitation':number;
+      'wind_max':number
+    }[]
   };
 }
 
@@ -47,19 +63,14 @@ export const useDataPolling = (jobId: string | null) => {
 
       const poll = async () => {
         try {
-          // Poll the specific job status endpoint
           const response = await axios.get(`/api/jobs/${jobId}`);
           const result = response.data;
-
-          // console.log("Polling result:", result)
 
           if (result.status === 'COMPLETED') {
             console.log("Job completed successfully!")
             
-            // Check if we have result_data
             if (result.result_data && result.result_data !== 'hello' && result.result_data !== 'None') {
               try {
-                // console.log(`The Python work is done: ${result.result_data}`)
                 const parsedData = JSON.parse(result.result_data);
                 setAnalysisData(parsedData);
                 setIsPolling(false);
@@ -107,7 +118,7 @@ export const useDataPolling = (jobId: string | null) => {
     return () => {
       stopPolling(); 
     };
-  }, [jobId]); // This entire effect function re-runs ONLY when the jobId changes
+  }, [jobId]);
 
   return { analysisData, isPolling, pollingError };
 };

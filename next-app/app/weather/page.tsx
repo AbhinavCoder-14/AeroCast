@@ -79,8 +79,7 @@ export default function WeatherPage() {
     setIsSearching(true);
     setSearchError(null);
     setSearchedCity(city);
-    setJobId(null); // Reset job ID to trigger polling for a new search
-    // setCurrentWeather(null);
+    setJobId(null);
 
     try {
       const response = await fetch("/api/jobs", {

@@ -34,7 +34,7 @@ const PageSelectorBar = ({activeSection,OnSectionChange}:PageSelectorBarProps) =
 
   return (
     <>
-      <div className="bar flex space-x-1 mt-4 ml-4">
+      <div className="w-[65%] bar flex justify-start space-x-1 mt-2 ml-2">
         {navigationOptions.map(({ id, name, icon }) => (
           <button
             key={id}

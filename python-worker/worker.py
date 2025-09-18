@@ -73,7 +73,7 @@ def process_job(job):
         forecast_data = forecast_response.json()
         print("Forecast data received successfully")
 
-        # Step 3: Get historical data (optional - for future use)
+        # Step 3: Get historical data
         print("Fetching historical data...")
         today = datetime.now()
         end_date = today - timedelta(days=1)
@@ -103,9 +103,7 @@ def process_job(job):
         hourly_df['time'] = pd.to_datetime(hourly_df['time'])
         
         print(f"Processed {len(hourly_df)} hourly data points")
-        print("Sample hourly data:")
-        print(hourly_df.head())
-
+        
         # Step 5: Format hourly data for frontend
         hourly_records = []
         for _, row in hourly_df.iterrows():
@@ -118,29 +116,61 @@ def process_job(job):
                 'windSpeed': float(row['wind_speed_10m']) if pd.notna(row['wind_speed_10m']) else 0.0
             })
 
-        historical_records = []
+        # Step 6: Process and aggregate historical data
+        historical_avg_records = []
+        historical_daily_records = []
         if archive_data.get('daily') and archive_data['daily'].get('time'):
             daily_df = pd.DataFrame(archive_data['daily'])
             daily_df['time'] = pd.to_datetime(daily_df['time'])
             
-            for _, row in daily_df.iterrows():
-                historical_records.append({
-                    'date': row['time'].isoformat(),
-                    'temp_mean': float(row['temperature_2m_mean']) if pd.notna(row['temperature_2m_mean']) else 0.0,
-                    'temp_max': float(row['temperature_2m_max']) if pd.notna(row['temperature_2m_max']) else 0.0,
-                    'temp_min': float(row['temperature_2m_min']) if pd.notna(row['temperature_2m_min']) else 0.0,
-                    'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
-                    'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0
+            daily_df['month'] = daily_df['time'].dt.to_period('M')
+            
+            monthly_agg = daily_df.groupby('month').agg({
+                'temperature_2m_mean': 'mean',
+                'temperature_2m_max': 'mean',
+                'temperature_2m_min': 'mean',
+                'precipitation_sum': 'sum',
+                'wind_speed_10m_max': 'mean'
+            }).reset_index()
+            
+            # *** FIX: Iterate over the aggregated monthly data ***
+            for _, row in monthly_agg.iterrows():
+                historical_avg_records.append({
+                    'month': str(row['month']),
+                    'temp_mean': round(float(row['temperature_2m_mean']), 2) if pd.notna(row['temperature_2m_mean']) else 0.0,
+                    'temp_max': round(float(row['temperature_2m_max']), 2) if pd.notna(row['temperature_2m_max']) else 0.0,
+                    'temp_min': round(float(row['temperature_2m_min']), 2) if pd.notna(row['temperature_2m_min']) else 0.0,
+                    'precipitation': round(float(row['precipitation_sum']), 2) if pd.notna(row['precipitation_sum']) else 0.0,
+                    'wind_max': round(float(row['wind_speed_10m_max']), 2) if pd.notna(row['wind_speed_10m_max']) else 0.0
                 })
+                
+                
+            for _, row in daily_df.iterrows():
+
+                historical_daily_records.append({
+
+                'date': row['time'].isoformat(),
+
+                'temp_mean': float(row['temperature_2m_mean']) if pd.notna(row['temperature_2m_mean']) else 0.0,
+
+                'temp_max': float(row['temperature_2m_max']) if pd.notna(row['temperature_2m_max']) else 0.0,
+
+                'temp_min': float(row['temperature_2m_min']) if pd.notna(row['temperature_2m_min']) else 0.0,
+
+                'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
+
+                'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0 })
+        
         final_result = {
-            'chart_data': {
+            "chart_data": {
                 'hourly_today': hourly_records,
-                'historical_records': historical_records
+                "historical_avg_records": historical_avg_records,
+                "historical_daily_records":historical_daily_records
             }
         }
         
-        print(f"Final result created with {len(hourly_records)} hourly records and {len(historical_records)} historical records")
-        
+        # print(f"Final result created with {len(hourly_records)} hourly records and {len(historical_avg_records)} historical records")
+        print(final_result)
         return json.dumps(final_result, default=str)
 
     except Exception as e:
