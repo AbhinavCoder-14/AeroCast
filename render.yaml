@@ -1,35 +1,55 @@
 # render.yaml
-# This file tells Render how to build, deploy, and connect your services.
+# Complete deployment configuration for Render
 
-# 1. Define the PostgreSQL Database
+# 1. PostgreSQL Database
 databases:
   - name: postgres
     databaseName: weatherdb
     user: weather
     plan: free
 
-# 2. Define the services (your Docker containers)
+# 2. Services
 services:
-  # The Next.js Web Application
+  # Next.js Web Application
   - type: web
-    name: webapp
+    name: aerocast-webapp
     plan: free
+    runtime: docker
     dockerfilePath: ./next-app/dockerfile
     dockerContext: ./next-app
-    # Corrected health check property
+    
+    # Health check
     healthCheckPath: /
+    
+    # Environment variables
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: postgres
           property: connectionString
+      
+      # These need to be added manually in Render dashboard
+      - key: NEXTAUTH_SECRET
+        sync: false  # Indicates this should be set in dashboard
+      
+      - key: NEXTAUTH_URL
+        sync: false  # Will be your app URL: https://aerocast-webapp.onrender.com
+      
+      - key: GEOAPIFY_API_KEY
+        sync: false
+      
+      - key: NODE_ENV
+        value: production
 
-  # The Python Background Worker
+  # Python Background Worker
   - type: worker
-    name: worker
+    name: aerocast-worker
     plan: free
+    runtime: docker
     dockerfilePath: ./python-worker/Dockerfile
     dockerContext: ./python-worker
+    
+    # Environment variables
     envVars:
       - key: DATABASE_URL
         fromDatabase:

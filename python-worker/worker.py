@@ -6,19 +6,25 @@ from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta
 import os
 
-# Connection to Db
+# Connection to Db - FIXED VERSION
 engine = None
 while engine is None:
     try:
         DATABASE_URL = os.environ.get("DATABASE_URL")
         if not DATABASE_URL:
-             # Fallback or raise error if environment variable is missing
              raise ValueError("DATABASE_URL environment variable is not set.")
-        engine = create_engine()
-        print("Successfully connected to the postgres database.")
+        
+        # FIX: Actually use the DATABASE_URL variable
+        engine = create_engine(DATABASE_URL)
+        
+        # Test the connection
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        
+        print("✅ Successfully connected to the postgres database.")
     except Exception as e:
-        print(f"database connection failed : {e}")
-        print("Retrying in 5 seconds")
+        print(f"❌ Database connection failed: {e}")
+        print("Retrying in 5 seconds...")
         time.sleep(5)
 
 def get_and_lock_pending_job(connection):
