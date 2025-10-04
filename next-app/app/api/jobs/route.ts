@@ -18,7 +18,7 @@ interface currentWeather {
   };
 }
 
-export async function getCurrentWeather(city: string) {
+async function getCurrentWeather(city: string) {
   try {
     console.log(`[Weather API] Fetching coordinates for city: ${city.split(",")[0]}`);
     
