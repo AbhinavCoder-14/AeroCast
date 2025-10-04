@@ -179,7 +179,7 @@ export default function WeatherPage() {
             border-4 border-solid border-blue-500 border-t-transparent"></div>
             {/* <div className="absolute inset-1.5 rounded-full bg-white dark:bg-slate-900"></div> */}
           </div>
-            <p className="text-gray-600">Loading...</p>
+            <p className="text-white">Loading...</p>
         </div>
       )}
       {searchError && (
@@ -189,14 +189,14 @@ export default function WeatherPage() {
       )}
 
       {currentWeather && searchedCity && activeSection === 1 && (
-        <div className="flex justify-center align-middle flex-col ">
-          <div className="text-center mt-6 p-6 rounded-lg max-w-md mx-auto">
-            <h2 className="text-6xl font-semibold mb-4">{searchedCity}</h2>
+        <div className="flex justify-center align-center flex-col">
+          <div className="text-center mt-6 p-5 rounded-lg max-w-md m-auto">
+            <h2 className="text-7xl font-semibold mb-4 border-2 w-[100%] m-auto">{searchedCity.split(",")[0]}</h2>
             <div className="text-8xl">{icon}</div>
             <p className="text-6xl font-bold pt-5">
               {Math.round(currentWeather.temperature_2m)}°C
             </p>
-            <p className="text-lg text-gray-600 mt-2">{description}</p>
+            <p className="text-lg text-gray-200 mt-2">{description}</p>
             {jobId && (
               <p className="text-xs text-gray-500 mt-2">
                 {/* Analysis Job ID: {jobId} */}
@@ -244,9 +244,18 @@ export default function WeatherPage() {
       {currentWeather && searchedCity && activeSection === 1 && (
         <div>
           {isPolling && (
-            <p className="text-center mt-4">
-              Fetching today's hourly forecast...
-            </p>
+            <>
+            <div className="min-h-screen bg-gradient-to-br text-white flex flex-col items-center my-5">
+
+              {/* <div className="relative w-12 h-12"> */}
+                <div className="w-10 h-10 rounded-full animate-spin
+                    border-4 border-solid border-blue-500 border-t-transparent"></div>
+                    {/* <div className="absolute inset-1.5 rounded-full bg-white dark:bg-slate-900"></div> */}
+                    {/* </div> */}
+                  <p className="text-center mt-4">Analyzing past data with python...</p>
+                  </div>
+            </>
+            
           )}
           {pollingError && (
             <p className="text-center mt-4 text-red-500">
@@ -258,7 +267,7 @@ export default function WeatherPage() {
           ) : (
             <p className="text-center mt-4 text-gray-500">
               {isPolling
-                ? "Loading hourly data..."
+                ? (<div className="loading"></div>)
                 : "No hourly data available"}
             </p>
           )}

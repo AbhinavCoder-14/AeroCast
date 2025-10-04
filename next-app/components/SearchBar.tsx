@@ -40,7 +40,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       }
 
       setIsLoading(false);
-    }, 300);
+    }, 200); // Basically it is working on Debouncing technique where when the user stop typing for continous 200ms then it will call the api/Search-Suggrestions?q=${city}
 
     return () => clearTimeout(timerId);
   }, [city, isDropDownVisable]);
