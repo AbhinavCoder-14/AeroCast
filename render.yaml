@@ -1,0 +1,48 @@
+services:
+  # 1. PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=weather
+      - POSTGRES_PASSWORD=weatherdb
+      - POSTGRES_DB=weatherdb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weather -d weatherdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Next.js Web Application Service (Production)
+  webapp:
+    build:
+      context: ./next-app
+      dockerfile: dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
+      - NEXTAUTH_SECRET=REPLACE_WITH_YOUR_OWN_SECRET_KEY
+      - NEXTAUTH_URL=http://localhost:3000
+      - GEOAPIFY_API_KEY=REPLACE_WITH_YOUR_GEOAPIFY_KEY
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 3. The Python Worker Service
+  worker:
+    build:
+      context: ./python-worker
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
