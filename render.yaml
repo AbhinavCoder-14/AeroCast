@@ -1,9 +1,6 @@
-# render.yaml
-# This file tells Render how to deploy your project.
 
-# 1. Define the PostgreSQL Database
 databases:
-  - name: postgres # This is the internal name for the database service
+  - name: postgres 
     databaseName: weatherdb
     user: weather
     plan: free # Use the free database instance type
