@@ -1,48 +1,40 @@
+# render.yaml
+# This file tells Render how to deploy your project.
+
+# 1. Define the PostgreSQL Database
+databases:
+  - name: postgres # This is the internal name for the database service
+    databaseName: weatherdb
+    user: weather
+    plan: free # Use the free database instance type
+
+# 2. Define the Web App and Background Worker
 services:
-  # 1. PostgreSQL Database Service
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=weather
-      - POSTGRES_PASSWORD=weatherdb
-      - POSTGRES_DB=weatherdb
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U weather -d weatherdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # The Next.js Web Application
+  - type: web
+    name: webapp
+    plan: free # Use the free web service instance type
+    dockerfilePath: ./next-app/dockerfile
+    dockerContext: ./next-app
+    # Health check path to ensure your app is running
+    healthCheck:
+      path: /
+    # Link environment variables to the database
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres # Links to the database defined above
+          property: connectionString
 
-  # 2. Next.js Web Application Service (Production)
-  webapp:
-    build:
-      context: ./next-app
-      dockerfile: dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
-      - NEXTAUTH_SECRET=REPLACE_WITH_YOUR_OWN_SECRET_KEY
-      - NEXTAUTH_URL=http://localhost:3000
-      - GEOAPIFY_API_KEY=REPLACE_WITH_YOUR_GEOAPIFY_KEY
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  # 3. The Python Worker Service
-  worker:
-    build:
-      context: ./python-worker
-      dockerfile: Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-volumes:
-  postgres-data:
+  # The Python Background Worker
+  - type: worker
+    name: worker
+    plan: free # Use the free worker instance type
+    dockerfilePath: ./python-worker/Dockerfile
+    dockerContext: ./python-worker
+    # Link environment variables to the database
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres # Links to the database defined above
+          property: connectionString
