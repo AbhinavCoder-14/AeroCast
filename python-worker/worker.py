@@ -10,11 +10,11 @@ import os
 engine = None
 while engine is None:
     try:
-        DATABASE_URL = "postgresql://weather:weatherdb@localhost:5432/weatherdb"
+        DATABASE_URL = os.environ.get("DATABASE_URL")
         if not DATABASE_URL:
              # Fallback or raise error if environment variable is missing
              raise ValueError("DATABASE_URL environment variable is not set.")
-        engine = create_engine(os.environ.get(DATABASE_URL))
+        engine = create_engine()
         print("Successfully connected to the postgres database.")
     except Exception as e:
         print(f"database connection failed : {e}")

@@ -1,5 +1,5 @@
 services:
-  # PostgreSQL Database Service
+  # 1. PostgreSQL Database Service
   postgres:
     image: postgres:15-alpine
     restart: unless-stopped
@@ -17,48 +17,32 @@ services:
       timeout: 5s
       retries: 5
 
-    
-
-  # Next.js Web Application Service (Development)
+  # 2. Next.js Web Application Service (Production)
   webapp:
-    image: node:18-alpine
-    working_dir: /app
+    build:
+      context: ./next-app
+      dockerfile: dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - ./next-app:/app
     environment:
-      - CHOKIDAR_USEPOLLING=true
       - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
-      - NEXTAUTH_SECRET=your-secret-key-here
+      - NEXTAUTH_SECRET=REPLACE_WITH_YOUR_OWN_SECRET_KEY
       - NEXTAUTH_URL=http://localhost:3000
+      - GEOAPIFY_API_KEY=REPLACE_WITH_YOUR_GEOAPIFY_KEY
     depends_on:
       postgres:
         condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Installing dependencies...' &&
-        npm install &&
-        echo 'Generating Prisma Client...' &&
-        npx prisma generate &&
-        echo 'Running migrations...' &&
-        npx prisma migrate dev --name init &&
-        echo 'Starting development server...' &&
-        npm run dev
-      "
 
-    # 2. The Python Worker Service
+  # 3. The Python Worker Service
   worker:
     build:
       context: ./python-worker
       dockerfile: Dockerfile
-    volumes:
-      - ./python-worker:/app
     environment:
       - DATABASE_URL=postgresql://weather:weatherdb@postgres:5432/weatherdb
     depends_on:
       postgres:
-        condition:service_healthy
+        condition: service_healthy
 
 volumes:
   postgres-data:
