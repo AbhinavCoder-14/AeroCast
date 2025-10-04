@@ -1,31 +1,35 @@
+# render.yaml
+# This file tells Render how to build, deploy, and connect your services.
 
+# 1. Define the PostgreSQL Database
 databases:
-  - name: postgres 
+  - name: postgres # This is the internal name Render will use for the database
     databaseName: weatherdb
     user: weather
     plan: free # Use the free database instance type
 
-# 2. Define the Web App and Background Worker
+# 2. Define the services (your Docker containers)
 services:
   # The Next.js Web Application
   - type: web
-    name: webapp
+    name: webapp # This name matches the service in your conceptual docker-compose
     plan: free # Use the free web service instance type
     dockerfilePath: ./next-app/dockerfile
     dockerContext: ./next-app
-    # Health check path to ensure your app is running
+    # Health check to ensure your app starts correctly before it's considered "live"
     healthCheck:
       path: /
-    # Link environment variables to the database
+    # Link environment variables. Render handles the DATABASE_URL automatically.
+    # Your secrets will be added in the Render dashboard.
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: postgres # Links to the database defined above
+          name: postgres # Links this service to the database defined above
           property: connectionString
 
   # The Python Background Worker
   - type: worker
-    name: worker
+    name: worker # This name matches the service in your conceptual docker-compose
     plan: free # Use the free worker instance type
     dockerfilePath: ./python-worker/Dockerfile
     dockerContext: ./python-worker
@@ -33,5 +37,5 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: postgres # Links to the database defined above
+          name: postgres # Links this service to the database defined above
           property: connectionString
