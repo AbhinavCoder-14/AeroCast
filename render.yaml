@@ -3,39 +3,35 @@
 
 # 1. Define the PostgreSQL Database
 databases:
-  - name: postgres # This is the internal name Render will use for the database
+  - name: postgres
     databaseName: weatherdb
     user: weather
-    plan: free # Use the free database instance type
+    plan: free
 
 # 2. Define the services (your Docker containers)
 services:
   # The Next.js Web Application
   - type: web
-    name: webapp # This name matches the service in your conceptual docker-compose
-    plan: free # Use the free web service instance type
+    name: webapp
+    plan: free
     dockerfilePath: ./next-app/dockerfile
     dockerContext: ./next-app
-    # Health check to ensure your app starts correctly before it's considered "live"
-    healthCheck:
-      path: /
-    # Link environment variables. Render handles the DATABASE_URL automatically.
-    # Your secrets will be added in the Render dashboard.
+    # Corrected health check property
+    healthCheckPath: /
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: postgres # Links this service to the database defined above
+          name: postgres
           property: connectionString
 
   # The Python Background Worker
   - type: worker
-    name: worker # This name matches the service in your conceptual docker-compose
-    plan: free # Use the free worker instance type
+    name: worker
+    plan: free
     dockerfilePath: ./python-worker/Dockerfile
     dockerContext: ./python-worker
-    # Link environment variables to the database
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: postgres # Links this service to the database defined above
+          name: postgres
           property: connectionString
