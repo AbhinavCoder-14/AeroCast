@@ -18,6 +18,7 @@ interface currentWeather {
   };
 }
 
+// REMOVED 'export' - This is now a private helper function
 async function getCurrentWeather(city: string) {
   try {
     console.log(`[Weather API] Fetching coordinates for city: ${city.split(",")[0]}`);
@@ -51,10 +52,9 @@ async function getCurrentWeather(city: string) {
           latitude,
           longitude,
           current: "temperature_2m,weather_code,relative_humidity_2m,apparent_temperature,pressure_msl,visibility,wind_speed_10m",
-        
+        },
         timeout: 10000, // 10 second timeout
       }
-    }
     );
 
     console.log(`[Weather API] Weather data received for ${city}`);
@@ -72,9 +72,7 @@ async function getCurrentWeather(city: string) {
   }
 }
 
-
-
-
+// This is the ONLY export - the POST route handler
 export async function POST(request: Request) {
   try {
     console.log("[API] POST request received");
