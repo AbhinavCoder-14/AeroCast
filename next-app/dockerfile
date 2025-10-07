@@ -4,6 +4,8 @@
 # We start with a version of Node.js to build the app.
 FROM node:18-alpine AS builder
 
+ENV DATABASE_URL="postgresql://dummyuser:dummypassword@dummyhost:5432/dummydb"
+
 # Set the main workspace inside the container to /app.
 WORKDIR /app
 

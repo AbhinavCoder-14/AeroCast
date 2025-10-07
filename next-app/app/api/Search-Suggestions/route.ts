@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ suggestions });
   } catch (error: any) {
-    console.log("api error");
+    console.log(`api error - ${error}`);
     return NextResponse.json(
       { error: error.message || "Failed to fetch suggestion" },
       { status: 500 }
