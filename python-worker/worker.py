@@ -5,29 +5,55 @@ import json
 from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv  # ADD THIS
+
+# Load environment variables from .env file
+load_dotenv()  # ADD THIS
 
 # Connection to Db - FIXED VERSION
 engine = None
-while engine is None:
+retry_count = 0
+max_retries = 3
+
+while engine is None and retry_count < max_retries:
     try:
+        DATABASE_URL = os.environ.get("DATABASE_URL")
         
-        DATABASE_URL = "postgresql://weather:weatherdb@localhost:5432/weatherdb"
-        # DATABASE_URL = os.environ.get("DATABASE_URL")
         if not DATABASE_URL:
-             raise ValueError("DATABASE_URL environment variable is not set.")
+            raise ValueError("DATABASE_URL environment variable is not set. Create a .env file in python-worker directory.")
         
-        # FIX: Actually use the DATABASE_URL variable
+        print(f"Connecting to database...")
         engine = create_engine(DATABASE_URL)
         
         # Test the connection
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         
-        print("✅ Successfully connected to the postgres database.")
+        print("Successfully connected to the postgres database.")
+        
+    except ValueError as ve:
+        print(f"Configuration Error: {ve}")
+        print("\nCreate python-worker/.env with:")
+        print("DATABASE_URL=postgresql://weather:weatherdb@localhost:5432/weatherdb")
+        break
+        
     except Exception as e:
-        print(f"Database connection failed: {e}")
-        print("Retrying in 5 seconds...")
-        time.sleep(5)
+        retry_count += 1
+        print(f"Database connection failed (attempt {retry_count}/{max_retries}): {e}")
+        
+        if retry_count < max_retries:
+            print("Retrying in 5 seconds...")
+            time.sleep(5)
+        else:
+            print("\nConnection failed. Please check:")
+            print("1. PostgreSQL is running: docker-compose up -d postgres")
+            print("2. .env file exists in python-worker directory")
+            print("3. DATABASE_URL is correct")
+            exit(1)
+
+if engine is None:
+    print("Failed to establish database connection. Exiting...")
+    exit(1)
 
 def get_and_lock_pending_job(connection):
     """
@@ -145,7 +171,6 @@ def process_job(job):
                 'wind_speed_10m_max': 'mean'
             }).reset_index()
             
-            # *** FIX: Iterate over the aggregated monthly data ***
             for _, row in monthly_agg.iterrows():
                 historical_avg_records.append({
                     'month': str(row['month']),
@@ -156,33 +181,25 @@ def process_job(job):
                     'wind_max': round(float(row['wind_speed_10m_max']), 2) if pd.notna(row['wind_speed_10m_max']) else 0.0
                 })
                 
-                
             for _, row in daily_df.iterrows():
-
                 historical_daily_records.append({
-
-                'date': row['time'].isoformat(),
-
-                'temp_mean': float(row['temperature_2m_mean']) if pd.notna(row['temperature_2m_mean']) else 0.0,
-
-                'temp_max': float(row['temperature_2m_max']) if pd.notna(row['temperature_2m_max']) else 0.0,
-
-                'temp_min': float(row['temperature_2m_min']) if pd.notna(row['temperature_2m_min']) else 0.0,
-
-                'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
-
-                'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0 })
+                    'date': row['time'].isoformat(),
+                    'temp_mean': float(row['temperature_2m_mean']) if pd.notna(row['temperature_2m_mean']) else 0.0,
+                    'temp_max': float(row['temperature_2m_max']) if pd.notna(row['temperature_2m_max']) else 0.0,
+                    'temp_min': float(row['temperature_2m_min']) if pd.notna(row['temperature_2m_min']) else 0.0,
+                    'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
+                    'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0
+                })
         
         final_result = {
             "chart_data": {
                 'hourly_today': hourly_records,
                 "historical_avg_records": historical_avg_records,
-                "historical_daily_records":historical_daily_records
+                "historical_daily_records": historical_daily_records
             }
         }
         
-        # print(f"Final result created with {len(hourly_records)} hourly records and {len(historical_avg_records)} historical records")
-        print(final_result)
+        print(f"Final result created with {len(hourly_records)} hourly records and {len(historical_avg_records)} historical records")
         return json.dumps(final_result, default=str)
 
     except Exception as e:
