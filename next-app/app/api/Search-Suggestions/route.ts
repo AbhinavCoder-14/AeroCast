@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     console.log("Entered search suggestion backend route");
 
     const apiKey = process.env.GEOAPIFY_API_KEY;
+    
 
     if (!apiKey) {
       throw new Error("API key for Geoapify is not configured.");

@@ -25,7 +25,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./next-app/.env
+      - .env
     environment:
       - DATABASE_URL=${DATABASE_URL} 
       - NEXTAUTH_SECRET=REPLACE_WITH_YOUR_OWN_SECRET_KEY
@@ -42,7 +42,7 @@ services:
       dockerfile: Dockerfile
 
     env_file:
-      - ./python-worker/.env
+      - .env
     environment:
       - DATABASE_URL=${DATABASE_URL}
     depends_on:
