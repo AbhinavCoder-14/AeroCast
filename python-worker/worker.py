@@ -11,7 +11,8 @@ engine = None
 while engine is None:
     try:
         
-        DATABASE_URL = os.environ.get("DATABASE_URL")
+        DATABASE_URL = "postgresql://weather:weatherdb@localhost:5432/weatherdb"
+        # DATABASE_URL = os.environ.get("DATABASE_URL")
         if not DATABASE_URL:
              raise ValueError("DATABASE_URL environment variable is not set.")
         
@@ -24,7 +25,7 @@ while engine is None:
         
         print("✅ Successfully connected to the postgres database.")
     except Exception as e:
-        print(f"❌ Database connection failed: {e}")
+        print(f"Database connection failed: {e}")
         print("Retrying in 5 seconds...")
         time.sleep(5)
 
