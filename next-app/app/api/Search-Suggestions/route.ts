@@ -35,6 +35,7 @@ export async function GET(request: Request) {
     const suggestions = data.features.map((feature: any) => {
       return feature.properties.formatted;
     });
+    
 
     return NextResponse.json({ suggestions });
   } catch (error: any) {

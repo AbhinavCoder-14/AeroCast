@@ -30,7 +30,7 @@ services:
       - DATABASE_URL=${DATABASE_URL} 
       - NEXTAUTH_SECRET=REPLACE_WITH_YOUR_OWN_SECRET_KEY
       - NEXTAUTH_URL=http://localhost:3000
-      - GEOAPIFY_API_KEY= ${GEOAPIFY_API_KEY}
+      - GEOAPIFY_API_KEY= f25c395f68184c14a2cc135066f49028
     depends_on:
       postgres:
         condition: service_healthy
