@@ -1,6 +1,9 @@
 import time
 import requests
 import pandas as pd
+
+import numpy as np
+import matplotlib.dates as mdates
 import json
 from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta
@@ -111,31 +114,6 @@ def process_job(job):
         forecast_data = forecast_response.json()
         print("Forecast data received successfully")
 
-        # Step 3: Get historical data
-        print("Fetching historical data...")
-        today = datetime.now()
-        end_date = today - timedelta(days=1)
-        start_date = end_date.replace(year=end_date.year - 1) + timedelta(days=1)
-        print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
-
-        archive_url = (
-            f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
-            f"&start_date={start_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
-            f"&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max"
-            f"&timezone=auto"
-        )
-        
-        print(f"Archive URL: {archive_url}")
-        
-        try:
-            archive_response = requests.get(archive_url, timeout=60)
-            archive_response.raise_for_status()
-            archive_data = archive_response.json()
-            print(f"Historical data received: {len(archive_data.get('daily', {}).get('time', []))} days")
-        except Exception as e:
-            print(f"Historical data fetch failed (non-critical): {e}")
-            archive_data = {'daily': {'time': [], 'temperature_2m_mean': [], 'temperature_2m_max': [], 'temperature_2m_min': [], 'precipitation_sum': [], 'wind_speed_10m_max': []}}
-
         # Step 4: Process hourly forecast data
         hourly_df = pd.DataFrame(forecast_data['hourly'])
         hourly_df['time'] = pd.to_datetime(hourly_df['time'])
@@ -153,6 +131,31 @@ def process_job(job):
                 'pressure': float(row['precipitation_probability']) if pd.notna(row['precipitation_probability']) else 0.0,
                 'windSpeed': float(row['wind_speed_10m']) if pd.notna(row['wind_speed_10m']) else 0.0
             })
+            
+            
+        # Step 3: Get historical data
+        print("Fetching historical data...")
+        today = datetime.now()
+        end_date = today - timedelta(days=1)
+        start_date = end_date.replace(year=end_date.year - 1) + timedelta(days=1)
+        print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+
+        archive_url = (
+            f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
+            f"&start_date={start_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
+            f"&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max"
+            f"&timezone=auto"
+        )
+                
+        try:
+            archive_response = requests.get(archive_url, timeout=60)
+            archive_response.raise_for_status()
+            archive_data = archive_response.json()
+            print(f"Historical data received: {len(archive_data.get('daily', {}).get('time', []))} days")
+        except Exception as e:
+            print(f"Historical data fetch failed (non-critical): {e}")
+            archive_data = {'daily': {'time': [], 'temperature_2m_mean': [], 'temperature_2m_max': [], 'temperature_2m_min': [], 'precipitation_sum': [], 'wind_speed_10m_max': []}}
+
 
         # Step 6: Process and aggregate historical data
         historical_avg_records = []
@@ -160,6 +163,14 @@ def process_job(job):
         if archive_data.get('daily') and archive_data['daily'].get('time'):
             daily_df = pd.DataFrame(archive_data['daily'])
             daily_df['time'] = pd.to_datetime(daily_df['time'])
+            
+            
+            
+            hottest_day = daily_df['temperature_2m_max'].idxmax()
+            coldest_day = daily_df['temperature_2m_min'].idxmin()
+            
+            windest_day = daily_df['wind_max'].idxmax()
+            
             
             daily_df['month'] = daily_df['time'].dt.to_period('M')
             
@@ -190,6 +201,77 @@ def process_job(job):
                     'precipitation': float(row['precipitation_sum']) if pd.notna(row['precipitation_sum']) else 0.0,
                     'wind_max': float(row['wind_speed_10m_max']) if pd.notna(row['wind_speed_10m_max']) else 0.0
                 })
+                
+                
+            temp_month_pd = pd.DataFrame(historical_avg_records)
+                
+            rainest_month = temp_month_pd['precipitation'].idxmax()
+                
+                
+            
+            print(f"--------------\n\n\n\n\n{hottest_day}\n\n\n\n\n")
+            print(f"--------------\n\n\n\n\n{coldest_day}\n\n\n\n\n")
+            print(f"--------------\n\n\n\n\n{windest_day}\n\n\n\n\n")
+            print(f"--------------\n\n\n\n\n{rainest_month}\n\n\n\n\n")
+                
+                
+                
+        end_date = today - timedelta(days=1)
+        ClimateStart_date = end_date.replace(year=end_date.year - 50) + timedelta(days=1)
+        
+                
+        climate_url = (
+            f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
+            f"&start_date={ClimateStart_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
+            f"&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max"
+            f"&timezone=auto"
+        )
+        
+        try:
+            response = requests.get(climate_url)
+            response.raise_for_status()
+            climate_data = response.json()
+            
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data: {e}")
+        
+        
+        
+        climate_change_df = []
+        
+        daily_data = climate_data['daily']
+        
+        df = pd.DataFrame(daily_data)
+        
+        df['time'] = pd.to_datetime(df['time'])
+        df.set_index("time",inplace=True)
+        
+        df.rename(columns={'temperature_2m_mean':"avg_temp","temperature_2m_max":"temp_max","temperature_2m_min":"temp_min"},inplace=True)
+        annual_avg_temp = df['avg_temp'].resample("Y").mean()
+        
+        
+        print(annual_avg_temp)
+        
+        x_numeric = mdates.date2num(annual_avg_temp.index)
+        y_numeric = annual_avg_temp.values
+        
+        
+        slope, intercept = np.polyfit(x_numeric, y_numeric, 1)
+        slope_per_year = slope * 365.25
+        
+        total_rise = slope_per_year * 50
+        
+        print(f"{total_rise} ---------------------------\n\n\n\n\n\n")
+        
+        
+        df['is_heatwave'] = df['temp_max'] > 45
+        headwave_days_per_year = df['is_heatwave'].resample("Y").sum()
+        
+        
+        df['is_tropical_night'] = df['temp_min'] > 25
+        tropical_night_per_year = df['temp_min'].resample("Y").sum()
+        
+           
         
         final_result = {
             "chart_data": {
@@ -199,7 +281,8 @@ def process_job(job):
             }
         }
         
-        print(f"Final result created with {len(hourly_records)} hourly records and {len(historical_avg_records)} historical records")
+        print(final_result['chart_data'])
+        
         return json.dumps(final_result, default=str)
 
     except Exception as e:
