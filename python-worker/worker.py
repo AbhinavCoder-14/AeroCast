@@ -300,7 +300,7 @@ def update_job_in_db(connection, job_id, status, result_data=None):
     if status == 'COMPLETED' and result_data:
         update_query = text("""
             UPDATE "jobs"
-            SET status = :status, result_data = :result_data
+            SET status = :status, result_data = :result_data , "completedAt" = NOW()
             WHERE "jobId" = :job_id
         """)
         params = {
@@ -311,7 +311,7 @@ def update_job_in_db(connection, job_id, status, result_data=None):
     else:
         update_query = text("""
             UPDATE "jobs"
-            SET status = :status
+            SET status = :status, "completedAt" = CASE WHEN :status IN ('FAILED', 'COMPLETED') THEN NOW() ELSE NULL END
             WHERE "jobId" = :job_id
         """)
         params = {

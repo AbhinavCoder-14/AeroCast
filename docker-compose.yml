@@ -49,5 +49,26 @@ services:
       postgres:
         condition: service_healthy
 
+
+  cleanup-worker:
+    build:
+      context: ./python-worker
+      dockerfile: Dockerfile
+    command: ["pyhton","cleanup.py"]
+    env_file:
+      - .env
+
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+
+    depends_on:
+      postgres:
+        condition:service_healthy
+
+    restart: unless-stopped
+
+
+
+
 volumes:
   postgres-data:

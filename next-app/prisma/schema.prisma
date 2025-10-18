@@ -17,9 +17,12 @@ model Jobs {
   city   String @map("city")
   
   status String @default("PENDING") @map("status")
-  result_data String @default("hello") @map("result_data")
-  createdAt DateTime @default(now())
+  result_data Json? @map("result_data")
+  createdAt DateTime @default(now()) @map("createdAt")
+  expiresAt DateTime? @map("expiresAt")
+  completedAt DateTime? // Add this field
 
+  @@index([status,createdAt,expiresAt]) // // Efficiently finds pending jobs, sorted by creation time
   @@map("jobs")
 } 
 
