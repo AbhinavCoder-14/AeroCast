@@ -54,7 +54,7 @@ services:
     build:
       context: ./python-worker
       dockerfile: Dockerfile
-    command: ["pyhton","cleanup.py"]
+    command: ["python", "cleanup.py"]
     env_file:
       - .env
 
@@ -63,7 +63,7 @@ services:
 
     depends_on:
       postgres:
-        condition:service_healthy
+        condition: service_healthy
 
     restart: unless-stopped
 

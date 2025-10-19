@@ -1,11 +1,9 @@
-# python-worker/cleanup.py
+
 
 import os
 import time
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-
-# Load environment variables
 load_dotenv()
 
 def cleanup_old_jobs():
