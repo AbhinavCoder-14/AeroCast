@@ -8,12 +8,10 @@ import json
 from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta
 import os
-from dotenv import load_dotenv  # ADD THIS
+from dotenv import load_dotenv
+load_dotenv() 
 
-# Load environment variables from .env file
-load_dotenv()  # ADD THIS
 
-# Connection to Db - FIXED VERSION
 engine = None
 retry_count = 0
 max_retries = 3
@@ -169,7 +167,8 @@ def process_job(job):
             hottest_day = daily_df['temperature_2m_max'].idxmax()
             coldest_day = daily_df['temperature_2m_min'].idxmin()
             
-            windest_day = daily_df['wind_max'].idxmax()
+            # windest_day = daily_df['wind_max'].idxmax()
+            windest_day = None
             
             
             daily_df['month'] = daily_df['time'].dt.to_period('M')
