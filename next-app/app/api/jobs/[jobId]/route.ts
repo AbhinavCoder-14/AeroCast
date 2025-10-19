@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 
+import { Prisma } from "@prisma/client";
+
 
 export async function GET(
   request: Request,
@@ -12,12 +14,38 @@ export async function GET(
     const resolvedParams = await params;
     const jobId = resolvedParams.jobId;
 
-    const job = await prisma.jobs.findUnique({
+    const statusCheck = await prisma.jobs.findUnique({
       where: {
         jobId: jobId,
+      },
+      select:{
+        status:true
       }
     });
+
+     if (!statusCheck) {
+      return NextResponse.json(
+        { error: "Job not found" },
+        { status: 404 }
+      );
+    }
+
+
+    const selectFields:Prisma.JobsSelect = {
+      jobId: true,
+      status: true,
+      city: true,
+      createdAt: true,
+      // Conditionally include result_data
+      result_data: statusCheck.status === "COMPLETED"
+    };
     
+
+
+    const job = await prisma.jobs.findUnique({
+      where: { jobId },
+      select: selectFields
+    });
     console.log("Complete job data:", job)
 
     if (!job) {
