@@ -1,51 +1,44 @@
 # 🌍 AeroCast - Advanced Climate Intelligence Platform
 
 <div align="center">
-
-![Next.js](https://img.shields.io/badge/Next.js-15.4-black?style=for-the-badge&logo=next.js)
-![Python](https://img.shields.io/badge/Python-3.9-blue?style=for-the-badge&logo=python)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=for-the-badge&logo=postgresql)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
-
 *Not just another weather app - A comprehensive climate intelligence platform with advanced distributed processing, real-time analytics, and long-term climate trend analysis*
 
-[🚀 Key Features](#-what-makes-aerocast-unique) | [🏗️ Architecture](#-advanced-distributed-architecture) | [📊 Climate Analysis](#-climate-change-analysis) | [⚡ Quick Start](#-quick-start)
+[ Key Features](#-what-makes-aerocast-unique) | [ Architecture](#-advanced-distributed-architecture) | [ Climate Analysis](#-climate-change-analysis) | [ Quick Start](#-quick-start)
 
 </div>
 
 ---
 
-## 🎯 What Makes AeroCast Unique
+##  What Makes AeroCast Unique
 
 **This isn't a simple "call weather API and display" application.** AeroCast is a sophisticated climate intelligence platform that goes far beyond basic weather information, offering deep insights into climate patterns, trends, and predictions.
 
-### 🌟 **Revolutionary Features**
+###  **Revolutionary Features**
 
-#### 🔄 **1. Distributed Background Processing System**
+####  **1. Distributed Background Processing System**
 - **Custom Job Queue**: PostgreSQL-based distributed job processing with advanced locking mechanisms
 - **Real-time Polling**: Intelligent client-side polling system that eliminates the need for WebSockets
 - **Scalable Workers**: Python background workers that process heavy computational tasks asynchronously
 - **Fault Tolerance**: Automatic job recovery and error handling with intelligent backoff strategies
 
-#### 🧠 **2. Multi-Dimensional Weather Intelligence**
+####  **2. Multi-Dimensional Weather Intelligence**
 - **Current Conditions**: Real-time weather data with comprehensive atmospheric metrics
 - **24-Hour Forecasting**: Detailed hourly predictions with interactive parameter switching
 - **Historical Analysis**: 1-year historical data processing with monthly trend aggregation
 - **Climate Patterns**: Long-term climate change analysis with 50-100 years of historical data
 
-#### 🎯 **3. Smart Location Intelligence**
+####  **3. Smart Location Intelligence**
 - **Debounced Search**: Performance-optimized city autocomplete with intelligent API call management
 - **Global Coverage**: Worldwide location support with precise geocoding
 - **Contextual Suggestions**: Smart city name suggestions with country and region context
 
-#### 📊 **4. Advanced Data Visualization**
+####  **4. Advanced Data Visualization**
 - **Dynamic Parameter Charts**: Switch between temperature, humidity, wind speed, and precipitation
 - **Historical Trend Analysis**: Monthly and yearly climate pattern visualization
 - **Climate Change Indicators**: Visual representation of long-term climate shifts
 - **Responsive Design**: Mobile-friendly charts that adapt to any screen size
 
-#### 🌡️ **5. Climate Change Analysis Dashboard**
+####  **5. Climate Change Analysis Dashboard**
 - **Century-Scale Data**: Analysis of climate patterns spanning 50-100 years
 - **Trend Detection**: Automatic identification of significant climate shifts
 - **Temperature Anomalies**: Visualization of temperature deviations from historical norms
@@ -55,7 +48,7 @@
 
 ---
 
-## 🏗️ Advanced Distributed Architecture
+##  Advanced Distributed Architecture
 
 ```mermaid
 graph TB
@@ -100,7 +93,7 @@ graph TB
 
 ## 🚀 Core Technical Innovations
 
-### **1. 🔄 Real-Time Job Processing System**
+### **1.  Real-Time Job Processing System**
 
 Unlike traditional weather apps that make direct API calls, AeroCast uses a sophisticated job queue system:
 
@@ -133,12 +126,12 @@ export const useDataPolling = (jobId: string | null) => {
 ```
 
 **Benefits:**
-- ✅ **Non-blocking UI**: Users get immediate current weather while historical analysis runs in background
-- ✅ **Scalable Processing**: Heavy computations don't impact frontend performance
-- ✅ **Resource Efficiency**: 60% less memory usage than WebSocket connections
-- ✅ **Automatic Cleanup**: Smart polling management prevents memory leaks
+-  **Non-blocking UI**: Users get immediate current weather while historical analysis runs in background
+-  **Scalable Processing**: Heavy computations don't impact frontend performance
+-  **Resource Efficiency**: 60% less memory usage than WebSocket connections
+-  **Automatic Cleanup**: Smart polling management prevents memory leaks
 
-### **2. 🧠 Advanced Database Job Queue**
+### **2.  Advanced Database Job Queue**
 
 ```python
 def get_and_lock_pending_job(connection):
@@ -168,12 +161,12 @@ def get_and_lock_pending_job(connection):
 ```
 
 **Advanced Features:**
-- ✅ **SKIP LOCKED**: PostgreSQL's advanced feature for non-blocking concurrent job processing
-- ✅ **Atomic Transactions**: Job claiming and status updates in single transaction
-- ✅ **Fault Recovery**: Automatic handling of worker failures and job reassignment
-- ✅ **Scalable Design**: Supports unlimited concurrent workers without race conditions
+-  **SKIP LOCKED**: PostgreSQL's advanced feature for non-blocking concurrent job processing
+-  **Atomic Transactions**: Job claiming and status updates in single transaction
+-  **Fault Recovery**: Automatic handling of worker failures and job reassignment
+-  **Scalable Design**: Supports unlimited concurrent workers without race conditions
 
-### **3. 🎯 Intelligent Search with Debouncing**
+### **3.  Intelligent Search with Debouncing**
 
 ```typescript
 useEffect(() => {
@@ -193,41 +186,41 @@ useEffect(() => {
 ```
 
 **Performance Optimizations:**
-- ✅ **70% Fewer API Calls**: Intelligent debouncing reduces unnecessary requests
-- ✅ **Conditional Loading**: Only searches when dropdown is visible
-- ✅ **Sub-100ms Response**: Lightning-fast autocomplete suggestions
-- ✅ **Graceful Degradation**: Handles API failures without breaking UI
+-  **70% Fewer API Calls**: Intelligent debouncing reduces unnecessary requests
+-  **Conditional Loading**: Only searches when dropdown is visible
+-  **Sub-100ms Response**: Lightning-fast autocomplete suggestions
+-  **Graceful Degradation**: Handles API failures without breaking UI
 
 ---
 
-## 📊 Climate Change Analysis
+##  Climate Change Analysis
 
 The **Climate Analysis Dashboard** is AeroCast's most powerful feature, providing unprecedented insights into long-term climate trends:
 
-### **🌡️ Temperature Trend Analysis**
+### ** Temperature Trend Analysis**
 - **Century-Scale Data**: Temperature records spanning 50-100 years
 - **Anomaly Detection**: Automatic identification of significant temperature deviations
 - **Seasonal Patterns**: Analysis of changing seasonal temperature distributions
 - **Heat Wave Frequency**: Tracking increase in extreme temperature events
 
-### **🌧️ Precipitation Pattern Analysis**
+### ** Precipitation Pattern Analysis**
 - **Rainfall Trends**: Long-term precipitation pattern changes
 - **Drought Cycles**: Historical drought frequency and severity analysis
 - **Storm Intensity**: Tracking changes in extreme weather event intensity
 - **Seasonal Shifts**: Detection of changing wet/dry season patterns
 
-### **💨 Wind and Atmospheric Pressure Changes**
+### ** Wind and Atmospheric Pressure Changes**
 - **Wind Pattern Evolution**: Changes in prevailing wind directions and speeds
 - **Pressure System Shifts**: Analysis of changing atmospheric pressure patterns
 - **Storm Track Changes**: How storm paths have evolved over decades
 
-### **📈 Visual Climate Intelligence**
+### ** Visual Climate Intelligence**
 - **Interactive Trend Lines**: Zoom and filter through decades of climate data
 - **Comparative Analysis**: Side-by-side comparison of different time periods
 - **Predictive Modeling**: Future climate projections based on historical trends
 - **Regional Variations**: How climate change affects different geographical areas
 
-### **🔬 Statistical Analysis Features**
+### ** Statistical Analysis Features**
 ```python
 def analyze_climate_trends(historical_data):
     """
@@ -255,7 +248,7 @@ def analyze_climate_trends(historical_data):
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### **Frontend Architecture**
 - **Framework**: Next.js 15.4 with App Router
@@ -278,7 +271,7 @@ def analyze_climate_trends(historical_data):
 
 ---
 
-## 📊 Performance Metrics
+##  Performance Metrics
 
 ### **System Performance**
 - **Response Time**: < 200ms for current weather data
@@ -294,7 +287,7 @@ def analyze_climate_trends(historical_data):
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### **Prerequisites**
 - Docker & Docker Compose
@@ -379,7 +372,7 @@ curl "http://localhost:3000/api/Search-Suggestions?q=San"
 
 ---
 
-## 🔮 Advanced Features
+##  Advanced Features
 
 ### **API Integration Architecture**
 - **OpenMeteo APIs**: Primary source for current and forecast data
@@ -418,7 +411,7 @@ def process_climate_analysis(location):
 
 ---
 
-## 🏆 Why Choose AeroCast?
+##  Why Choose AeroCast?
 
 ### **For Climate Researchers**
 - **Comprehensive Data**: Access to century-scale climate records
@@ -446,7 +439,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -467,11 +460,7 @@ git push origin feature/amazing-feature
 
 ---
 
-## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/aerocast-platform&type=Date)](https://star-history.com/#yourusername/aerocast-platform&Date)
-
----
 
 <div align="center">
 
