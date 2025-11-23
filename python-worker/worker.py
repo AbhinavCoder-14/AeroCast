@@ -9,6 +9,27 @@ from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
+
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
+
+# --- DUMMY WEB SERVER TO TRICK RENDER ---
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Worker is running!")
+
+def start_dummy_server():
+    # Render sets the PORT environment variable (default 10000)
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    print(f"Dummy server listening on port {port}")
+    server.serve_forever()
+
+
+
 load_dotenv() 
 
 
@@ -132,11 +153,11 @@ def process_job(job):
             
             
         # Step 3: Get historical data
-        print("Fetching historical data...")
+        #print("Fetching historical data...")
         today = datetime.now()
         end_date = today - timedelta(days=1)
         start_date = end_date.replace(year=end_date.year - 1) + timedelta(days=1)
-        print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        #print(f"Fetching data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
 
         archive_url = (
             f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}"
@@ -149,7 +170,7 @@ def process_job(job):
             archive_response = requests.get(archive_url, timeout=60)
             archive_response.raise_for_status()
             archive_data = archive_response.json()
-            print(f"Historical data received: {len(archive_data.get('daily', {}).get('time', []))} days")
+            #print(f"Historical data received: {len(archive_data.get('daily', {}).get('time', []))} days")
         except Exception as e:
             print(f"Historical data fetch failed (non-critical): {e}")
             archive_data = {'daily': {'time': [], 'temperature_2m_mean': [], 'temperature_2m_max': [], 'temperature_2m_min': [], 'precipitation_sum': [], 'wind_speed_10m_max': []}}
@@ -208,10 +229,10 @@ def process_job(job):
                 
                 
             
-            print(f"--------------\n\n\n\n\n{hottest_day}\n\n\n\n\n")
-            print(f"--------------\n\n\n\n\n{coldest_day}\n\n\n\n\n")
-            print(f"--------------\n\n\n\n\n{windest_day}\n\n\n\n\n")
-            print(f"--------------\n\n\n\n\n{rainest_month}\n\n\n\n\n")
+            #print(f"--------------\n\n\n\n\n{hottest_day}\n\n\n\n\n")
+            #print(f"--------------\n\n\n\n\n{coldest_day}\n\n\n\n\n")
+            #print(f"--------------\n\n\n\n\n{windest_day}\n\n\n\n\n")
+            #print(f"--------------\n\n\n\n\n{rainest_month}\n\n\n\n\n")
                 
                 
                 
@@ -249,7 +270,7 @@ def process_job(job):
         annual_avg_temp = df['avg_temp'].resample("Y").mean()
         
         
-        print(annual_avg_temp)
+        #print(annual_avg_temp)
         
         x_numeric = mdates.date2num(annual_avg_temp.index)
         y_numeric = annual_avg_temp.values
@@ -260,7 +281,7 @@ def process_job(job):
         
         total_rise = slope_per_year * 50
         
-        print(f"{total_rise} ---------------------------\n\n\n\n\n\n")
+        #print(f"{total_rise} ---------------------------\n\n\n\n\n\n")
         
         
         df['is_heatwave'] = df['temp_max'] > 45
@@ -280,7 +301,7 @@ def process_job(job):
             }
         }
         
-        print(final_result['chart_data'])
+        #(final_result['chart_data'])
         
         return json.dumps(final_result, default=str)
 
@@ -352,4 +373,10 @@ def main_loop():
             time.sleep(15)
 
 if __name__ == "__main__":
+    
+    server_thread = threading.Thread(target=start_dummy_server, daemon=True)
+    server_thread.start()   
+    
+    time.sleep(1)
+    
     main_loop()

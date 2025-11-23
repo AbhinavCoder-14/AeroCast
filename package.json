@@ -4,7 +4,7 @@
     "prisma": "^6.13.0"
   },
   "dependencies": {
-    "@prisma/client": "^6.13.0",
+    "@prisma/client": "^6.18.0",
     "lucide-react": "^0.544.0",
     "react": "^19.1.1"
   }

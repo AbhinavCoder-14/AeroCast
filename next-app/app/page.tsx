@@ -6,6 +6,7 @@ import PageSelectorBar from "@/components/PageSelecterBar";
 import HistoricalChart from "@/components/HistroicalCharts";
 import { useState } from "react";
 import { useDataPolling } from "./hooks/datapolling";
+import ClimateChangePage from "@/components/ClimateChangePage";
 
 interface CurrentWeather {
   temperature_2m: number;
@@ -175,11 +176,13 @@ export default function WeatherPage() {
       {isSearching && (
         <div className="min-h-screen bg-gradient-to-br text-white flex flex-col items-center justify-center">
           <div className="relative w-12 h-12">
-            <div className="w-10 h-10 rounded-full animate-spin
-            border-4 border-solid border-blue-500 border-t-transparent"></div>
+            <div
+              className="w-10 h-10 rounded-full animate-spin
+            border-4 border-solid border-blue-500 border-t-transparent"
+            ></div>
             {/* <div className="absolute inset-1.5 rounded-full bg-white dark:bg-slate-900"></div> */}
           </div>
-            <p className="text-white">Loading...</p>
+          <p className="text-white">Loading...</p>
         </div>
       )}
       {searchError && (
@@ -191,7 +194,9 @@ export default function WeatherPage() {
       {currentWeather && searchedCity && activeSection === 1 && (
         <div className="flex justify-center align-center flex-col">
           <div className="text-center mt-6 p-5 rounded-lg max-w-md m-auto">
-            <h2 className="text-7xl font-semibold mb-4 border-2 w-[100%] m-auto">{searchedCity.split(",")[0]}</h2>
+            <h2 className="text-7xl font-semibold mb-4 border-2 w-[100%] m-auto">
+              {searchedCity.split(",")[0]}
+            </h2>
             <div className="text-8xl">{icon}</div>
             <p className="text-6xl font-bold pt-5">
               {Math.round(currentWeather.temperature_2m)}°C
@@ -231,7 +236,10 @@ export default function WeatherPage() {
             <p className="text-center mt-4 text-red-500">{pollingError}</p>
           )}
           {analysisData ? (
-            <HistoricalChart currentCity={searchedCity} analysisData={analysisData} />
+            <HistoricalChart
+              currentCity={searchedCity}
+              analysisData={analysisData}
+            />
           ) : (
             !isPolling && (
               <p className="text-center mt-4">No historical data available.</p>
@@ -245,17 +253,19 @@ export default function WeatherPage() {
         <div>
           {isPolling && (
             <>
-            <div className="min-h-screen bg-gradient-to-br text-white flex flex-col items-center my-5">
-
-              {/* <div className="relative w-12 h-12"> */}
-                <div className="w-10 h-10 rounded-full animate-spin
-                    border-4 border-solid border-blue-500 border-t-transparent"></div>
-                    {/* <div className="absolute inset-1.5 rounded-full bg-white dark:bg-slate-900"></div> */}
-                    {/* </div> */}
-                  <p className="text-center mt-4">Analyzing past data with python...</p>
-                  </div>
+              <div className="min-h-screen bg-gradient-to-br text-white flex flex-col items-center my-5">
+                {/* <div className="relative w-12 h-12"> */}
+                <div
+                  className="w-10 h-10 rounded-full animate-spin
+                    border-4 border-solid border-blue-500 border-t-transparent"
+                ></div>
+                {/* <div className="absolute inset-1.5 rounded-full bg-white dark:bg-slate-900"></div> */}
+                {/* </div> */}
+                <p className="text-center mt-4">
+                  Analyzing past data with python...
+                </p>
+              </div>
             </>
-            
           )}
           {pollingError && (
             <p className="text-center mt-4 text-red-500">
@@ -266,10 +276,38 @@ export default function WeatherPage() {
             <HourlyChart data={formattedHourlyData} />
           ) : (
             <p className="text-center mt-4 text-gray-500">
-              {isPolling
-                ? (<div className="loading"></div>)
-                : "No hourly data available"}
+              {isPolling ? (
+                <div className="loading"></div>
+              ) : (
+                "No hourly data available"
+              )}
             </p>
+          )}
+        </div>
+      )}
+
+      {currentWeather && searchedCity && activeSection === 3 && (
+        <div>
+          {isPolling && (
+            <div className="min-h-screen bg-gradient-to-br text-white flex flex-col items-center my-5">
+              <div className="w-10 h-10 rounded-full animate-spin border-4 border-solid border-blue-500 border-t-transparent"></div>
+              <p className="text-center mt-4">
+                Analyzing 50-year climate data...
+              </p>
+            </div>
+          )}
+          {pollingError && (
+            <p className="text-center mt-4 text-red-500">{pollingError}</p>
+          )}
+          {analysisData?.chart_data ? (
+            <ClimateChangePage
+            />
+          ) : (
+            !isPolling && (
+              <p className="text-center mt-4">
+                No climate analysis data available.
+              </p>
+            )
           )}
         </div>
       )}
